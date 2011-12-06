@@ -5,7 +5,6 @@ import sys, os, re, codecs, time
 from collections import defaultdict
 from ParseXml import ParseXml
 from ParseStanfordXml import ParseStanfordXml
-from Accents import Accents
 from Miscelaneous import bcolors
 from Miscelaneous import Miscelaneous
 
@@ -21,7 +20,6 @@ class StatisticalCorpus:
 		self.window_size = int(window_size)
 		self.temp_folder = temp_folder
 		self.qty_documents = len(self.files)
-		self.accents = Accents()
 		self.misc = Miscelaneous()
 
 		os.system('rm '+self.temp_folder+'Statistical_corpus.txt')
@@ -55,7 +53,6 @@ class StatisticalCorpus:
 						lemma = re.sub('_$', '', lemma)
 
 						if not re.match('^(pu|num|conj|art|prp|spec)', dic_terms[id_t]['pos']) and (len(lemma) >= self.min_word_size):
-							lemma = self.accents.buildCodes(lemma)
 							if dic_nouns.has_key(id_t):
 								string_corpus += lemma+'__N '
 							#elif dic_verbs.has_key(id_t):
@@ -99,7 +96,6 @@ class StatisticalCorpus:
 				lemma = re.sub('(--|/|,|;|\(|\)|\$|\+|\'|[.])', '', dic_terms[id_t]['lemma']).lower()
 				lemma = re.sub('-', '_', lemma)
 				lemma = re.sub('_$', '', lemma)
-				lemma = self.accents.buildCodes(lemma)
 				
 				if len(lemma) >= self.min_word_size:
 					if re.match('^NN', dic_terms[id_t]['pos']):

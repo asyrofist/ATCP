@@ -7,7 +7,6 @@ import sys
 
 from ParseXml import ParseXml
 from ParseCg import ParseCg
-from Accents import Accents
 
 class SyntacticContexts:
 
@@ -27,8 +26,6 @@ class SyntacticContexts:
 		#self.dic_sv = {}
 		#self.dic_vo = {}
 
-		self.accents = Accents()
-
 		self.mountANRelations = True
 		#self.mountSVRelations = True
 		#self.mountVORelations = True
@@ -46,26 +43,26 @@ class SyntacticContexts:
 				if self.dic_t_xml.has_key(id_3) and len(self.dic_t_xml[id_3]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_3]['pos']
 					if re.match('^(n|prop):prp:(art|num|pron-indef|pron-poss|pu):(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('prep_'+self.accents.buildCodes(self.dic_t_xml[id_3]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'prep_#'
-						self.__addElementDicAN__('prep_'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_3]['lemma'])) # 'prep_#'
+						self.__addElementDicAN__('prep_'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'prep_#'
+						self.__addElementDicAN__('prep_'+self.dic_t_xml[id_t]['lemma']+'#'+self.dic_t_xml[id_3]['lemma']) # 'prep_#'
 					if re.match('^(n|prop):adj:adj:adj$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_3]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 
 				if self.dic_t_xml.has_key(id_2) and len(self.dic_t_xml[id_2]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_2]['pos']
 					if re.match('^(n|prop):prp:(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('prep_'+self.accents.buildCodes(self.dic_t_xml[id_2]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'prep_#'
-						self.__addElementDicAN__('prep_'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_2]['lemma'])) # 'prep_#'
+						self.__addElementDicAN__('prep_'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'prep_#'
+						self.__addElementDicAN__('prep_'+self.dic_t_xml[id_t]['lemma']+'#'+self.dic_t_xml[id_2]['lemma']) # 'prep_#'
 					if re.match('^(n|prop):adj:adj$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_2]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 				
 				if self.dic_t_xml.has_key(id_1) and len(self.dic_t_xml[id_1]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']
 					if re.match('^(n|prop):adj$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_1]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_1]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 					if re.match('^(n|prop):(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('nn_'+self.accents.buildCodes(self.dic_t_xml[id_1]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'nn_#'
-						self.__addElementDicAN__('nn_'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_1]['lemma'])) # 'nn_#'
+						self.__addElementDicAN__('nn_'+self.dic_t_xml[id_1]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'nn_#'
+						self.__addElementDicAN__('nn_'+self.dic_t_xml[id_t]['lemma']+'#'+self.dic_t_xml[id_1]['lemma']) # 'nn_#'
 
 				id_1 = id_sentence+'_'+str((int(id_word) - 1))
 				id_2 = id_sentence+'_'+str((int(id_word) - 2))
@@ -74,17 +71,17 @@ class SyntacticContexts:
 				if self.dic_t_xml.has_key(id_3) and len(self.dic_t_xml[id_3]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_3]['pos']+':'+self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:adj:adj:(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_3]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 				
 				if self.dic_t_xml.has_key(id_2) and len(self.dic_t_xml[id_2]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:adj:(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_2]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 
 				if self.dic_t_xml.has_key(id_1) and len(self.dic_t_xml[id_1]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:(n|prop)$', ids) is not None:
-						self.__addElementDicAN__('adj_'+self.accents.buildCodes(self.dic_t_xml[id_1]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])) # 'adj_#'
+						self.__addElementDicAN__('adj_'+self.dic_t_xml[id_1]['lemma']+'#'+self.dic_t_xml[id_t]['lemma']) # 'adj_#'
 	
 	def __addElementDicAN__(self, relation):
 		#relation = relation.lower()
@@ -106,11 +103,11 @@ class SyntacticContexts:
 				while self.dic_t_cg.has_key(id_next_word):
 					if 'v-' in self.dic_t_xml[id_next_word]['pos']:
 						if self.dic_t_xml[id_t]['headof'] != '':
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_next_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_next_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 							nounphrase = self.__cleanStructureToNP__(self.dic_nts[self.dic_t_xml[id_t]['headof']]['structure'])
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_next_word]['lemma'])+'#'+self.accents.buildCodes(nounphrase))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_next_word]['lemma']+'#'+nounphrase)
 						else:
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_next_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_next_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 						break
 					next_word += 1
 					id_next_word = id_sentence+'_'+str(next_word)
@@ -124,11 +121,11 @@ class SyntacticContexts:
 				while self.dic_t_cg.has_key(id_previous_word):
 					if 'v-' in self.dic_t_xml[id_previous_word]['pos']:
 						if self.dic_t_xml[id_t]['headof'] != '':
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 							nounphrase = self.__cleanStructureToNP__(self.dic_nts[self.dic_t_xml[id_t]['headof']]['structure'])
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(nounphrase))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+nounphrase)
 						else:
-							self.__addElementDicSV__('subj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicSV__('subj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 						break
 					previous_word -= 1
 					id_previous_word = id_sentence+'_'+str(previous_word)
@@ -154,11 +151,11 @@ class SyntacticContexts:
 				while self.dic_t_cg.has_key(id_previous_word):
 					if 'v-' in self.dic_t_xml[id_previous_word]['pos']:
 						if self.dic_t_xml[id_t]['headof'] != '':
-							self.__addElementDicVO__('obj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicVO__('obj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 							nounphrase = self.__cleanStructureToNP__(self.dic_nts[self.dic_t_xml[id_t]['headof']]['structure'])
-							self.__addElementDicVO__('obj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(nounphrase))
+							self.__addElementDicVO__('obj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+nounphrase)
 						else:
-							self.__addElementDicVO__('obj_'+self.accents.buildCodes(self.dic_t_cg[id_previous_word]['lemma'])+'#'+self.accents.buildCodes(self.dic_t_cg[id_t]['lemma']))
+							self.__addElementDicVO__('obj_'+self.dic_t_cg[id_previous_word]['lemma']+'#'+self.dic_t_cg[id_t]['lemma'])
 						break
 					previous_word -= 1
 					id_previous_word = id_sentence+'_'+str(previous_word)
@@ -186,7 +183,7 @@ class SyntacticContexts:
 		
 		phrase = '';
 		for id_t in np:
-			phrase += self.accents.buildCodes(self.dic_t_xml[id_t]['lemma'])+' '
+			phrase += self.dic_t_xml[id_t]['lemma']+' '
 		phrase = phrase.replace(' --', ',').rstrip()
 		phrase = phrase.replace('-', '_')
 		phrase = phrase.replace(' ', '_')

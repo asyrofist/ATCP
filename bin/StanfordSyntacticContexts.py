@@ -4,7 +4,6 @@
 import re, codecs, os, sys
 
 from ParseStanfordXml import ParseStanfordXml
-from Accents import Accents
 from Miscelaneous import Miscelaneous
 from Miscelaneous import bcolors
 
@@ -20,7 +19,6 @@ class StanfordSyntacticContexts:
 		self.min_word_size = int(min_word_size)
 		self.temp_folder = temp_folder
 		self.qty_documents = len(self.files)
-		self.accents = Accents()
 		self.misc = Miscelaneous()
 
 		self.dic_t = {}
@@ -56,10 +54,8 @@ class StanfordSyntacticContexts:
 			if self.dic_nt[id_nt]['cat'] == 'nn':
 				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicAN__(context+'#'+noun)
 					self.__addElementDicAN__(noun+'#'+context)
@@ -67,20 +63,16 @@ class StanfordSyntacticContexts:
 			elif self.dic_nt[id_nt]['cat'] == 'amod':
 				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicSV__(context+'#'+noun)
 
 			elif self.dic_nt[id_nt]['cat'] == 'prep_for':
 				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicAN__('for_'+context+'#'+noun)
 					self.__addElementDicAN__('for_'+noun+'#'+context)
@@ -88,10 +80,8 @@ class StanfordSyntacticContexts:
 			elif self.dic_nt[id_nt]['cat'] == 'prep_of':
 				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicAN__('of_'+context+'#'+noun)
 					self.__addElementDicAN__('of_'+noun+'#'+context)
@@ -99,10 +89,8 @@ class StanfordSyntacticContexts:
 			elif re.match('^(nsubjpass|nsubj|xsubj|agent)$', self.dic_nt[id_nt]['cat']):
 				noun = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicSV__(context+'#'+noun)
 			
@@ -110,10 +98,8 @@ class StanfordSyntacticContexts:
 				#print id_nt
 				noun = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
-				noun = self.accents.buildCodes(noun)
 				context = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				context = self.accents.buildCodes(context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicVO__(context+'#'+noun)
 				#print id_nt +' -> '+self.dic_nt[id_nt]['cat']
