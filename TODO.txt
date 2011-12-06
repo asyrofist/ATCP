@@ -1,0 +1,41 @@
+NAME
+    TODO Things to do in the Automatic Thesaurus Construction Package
+
+SYNOPSIS
+    Automatic Thesaurus Construction Package Todo list
+
+DESCRIPTION
+    The following list describes some of the features that we'd like to
+    include in ATCP in future. No particular priority is assigned to these
+    items - they are all things we've discussed amongst ourselves or with
+    users and agree would be good to add.
+
+    If you have additional ideas, or would like to comment on something on
+    the current list, please let us know via the ngram mailing list.
+
+  VERIFY THESAURUS CONSTRUCTION
+    What should change if the user wants to re-build the thesaurus, but
+    changing only the number of related terms. It should not be necessary
+    to rebuild the whole thesaurus, having the middle files.
+
+
+
+
+
+
+
+
+AUTHOR
+    Roger Granada, roger.leitzke@gmail.com
+
+COPYRIGHT
+    Copyright (C) 2011 Roger Granada
+
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.2 or
+    any later version published by the Free Software Foundation; with no
+    Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+
+    Note: a copy of the GNU Free Documentation License is available on the
+    web at <http://www.gnu.org/copyleft/fdl.html> and is included in this
+    distribution as FDL.txt.
