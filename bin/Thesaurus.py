@@ -22,6 +22,7 @@ class Thesaurus:
 			for index_related_term in dic_terms[seed]['terms']:
 				if qty_terms < int(self.max_qty_terms):
 					similarity = index_related_term[index_related_term.keys()[0]]
+					if not '.' in similarity: similarity += '.'
 					for i in range(len(similarity),15): similarity += '0'
 					term = index_related_term.keys()[0]
 					self.thesaurus_file.write('\t\t<related similarity="'+similarity+'">'+term+'</term>\n')
