@@ -5,7 +5,7 @@ import sys, codecs, re, os
 from Miscelaneous import bcolors
 
 class Thesaurus:
-	def __init__(self, output_file, window_size, max_qty_terms):
+	def __init__(self, output_file, max_qty_terms):
 		self.output_file = output_file
 		self.max_qty_terms = max_qty_terms
 		try:
@@ -22,6 +22,7 @@ class Thesaurus:
 			for index_related_term in dic_terms[seed]['terms']:
 				if qty_terms < int(self.max_qty_terms):
 					similarity = index_related_term[index_related_term.keys()[0]]
+					for i in range(len(similarity),15): similarity += '0'
 					term = index_related_term.keys()[0]
 					self.thesaurus_file.write('\t\t<related similarity="'+similarity+'">'+term+'</term>\n')
 					qty_terms += 1
