@@ -27,6 +27,8 @@ class Parameters:
 				self.mi_precision = line.split('=')[1].replace('\n','')
 			if re.match('min_word_size', line):
 				self.min_word_size = line.split('=')[1].replace('\n','')
+			if re.match('sim_measure', line):
+				self.sim_measure = line.split('=')[1].replace('\n','')
 			if re.match('svd_dimension', line):
 				self.svd_dimension = line.split('=')[1].replace('\n','')
 			if re.match('window_size', line):
@@ -36,8 +38,8 @@ class Parameters:
 
 		try:
 			opts, args = getopt.getopt(argv,\
-				"h:i:o:m:M:p:w:d:t:l:s:", \
-				["help", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "seeds="])
+				"h:i:o:m:M:p:w:d:t:l:s:S:", \
+				["help", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "seeds=", "sim_measure="])
 		except getopt.GetoptError:
 			self.usage(type_atc)
 			sys.exit(2)
@@ -49,7 +51,7 @@ class Parameters:
 				if os.path.isdir(arg): self.input_folder = arg 
 				else: print bcolors.WARNING+'WARNING: '+arg+' is not a folder, setting '+self.input_folder+' as input folder'+bcolors.ENDC
 			elif opt in ("-o", "--output"):
-				if os.path.isdir(arg): self.output_folder = arg 
+				if os.path.isdir(arg):  self.output_folder = arg
 				else: print bcolors.WARNING+'WARNING: '+arg+' is not a folder, setting '+self.output_folder+' as output folder'+bcolors.ENDC
 			elif opt in ("-t", "--temp"): 
 				if os.path.isdir(arg): self.temp_folder = arg 
@@ -74,6 +76,12 @@ class Parameters:
 			elif type_atc == 'HigherOrder':
 				if opt in ("-d", "--svd_dimension"):
 					self.svd_dimension = arg
+				elif opt in ("-s", "--sim_measure"):
+					self.sim_measure = arg
+
+			else:
+				if opt in ("-S", "--sim_measure"):
+					self.sim_measure = arg
 
 	def getInputFolder(self):
 		return self.input_folder
@@ -95,6 +103,9 @@ class Parameters:
 
 	def getSeedsFile(self):
 		return self.seeds_file
+
+	def getSimilarityMeasure(self):
+		return self.sim_measure
 
 	def getSvdDimension(self):
 		return self.svd_dimension
@@ -130,6 +141,7 @@ class Parameters:
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
    -s  --seeds=               File containing seeds to the thesaurus
+   -S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -t  --temp=                Temp folder to receive temporary data
    -h  --help                 Display this help and exit
    """
@@ -142,6 +154,7 @@ class Parameters:
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
    -s  --seeds=               File containing seeds to the thesaurus
+   -S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -t  --temp=                Temp folder to receive temporary data
    -h  --help                 Display this help and exit
    """
