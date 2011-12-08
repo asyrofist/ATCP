@@ -1,16 +1,17 @@
 #!/usr/bin/python
 
-import math
-import codecs
-import sys
+import math, codecs, sys
 
 from collections import defaultdict
+from collections import OrderedDict
 from operator import itemgetter
 from Miscelaneous import bcolors
 from Seeds import Seeds
 
 class Measures:
 	def __init__(self, ctx_freq_file, seedfile):
+		seeds_file = Seeds(seedfile)
+		self.list_seeds = seeds_file.getSeeds()
 		self.dic_baseline = defaultdict(dict)
 		self.dic_diceBin = defaultdict(dict)
 		self.dic_diceMin = defaultdict(dict)
@@ -29,8 +30,6 @@ class Measures:
 
 	def __buildHashs__(self, ctx_freq_file, seedfile):
 		list_nouns = []
-		seeds_file = Seeds(seedfile)
-		list_seeds = seeds_file.getSeeds()
 
 		try:
 			ctxfreqfile = codecs.open(ctx_freq_file, 'r', 'utf-8')
@@ -52,7 +51,7 @@ class Measures:
 			else:
 				self.dic_qty_noun[noun] = 1
 
-		for seed in list_seeds:
+		for seed in self.list_seeds:
 			for related in list_nouns:
 				if seed != related:
 					baseline = 0
@@ -150,131 +149,93 @@ class Measures:
 						self.dic_jaccardMax[seed][related] = jaccardMax
 				
 	""" Methods to get the entire dictionaries """
-	def getDicBaseline(self):
-		return self.dic_baseline
+	def getDic(self, sim_measure):
+		dic_measure = self.__verifyMeasure__(sim_measure)
+		return self.__sortTopNFromAllDic__(dic_measure, 0)
 
-	def getDicDiceBin(self):
-		return self.dic_diceBin
-
-	def getDicDiceMin(self):
-		return self.dic_diceMin
-
-	def getDicJaccard(self):
-		return self.dic_jaccard
-
-	def getDicCosineBin(self):
-		return self.dic_cosineBin
-
-	def getDicCosine(self):
-		return self.dic_cosine
-
-	def getDicCity(self):
-		return self.dic_city
-
-	def getDicEuclidean(self):
-		return self.dic_euclidean
-
-	def getDicJs(self):
-		return self.dic_js
-
-	def getDicLin(self):
-		return self.dic_lin
-
-	def getDicJaccardMax(self):
-		return self.dic_jaccardMax
-
-	""" Methods to get the dictionaries to a specific seed """
-	def getDicBaselineToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_baseline)
-
-	def getDicDiceBinToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_diceBin)
-
-	def getDicDiceMinToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_diceMin)
-
-	def getDicJaccardToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_jaccard)
-
-	def getDicCosineBinToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_cosineBin)
-
-	def getDicCosineToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_cosine)
-
-	def getDicCityToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_city)
-
-	def getDicEuclideanToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_euclidean)
-
-	def getDicJsToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_js)
-
-	def getDicLinToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_lin)
-
-	def getDicJaccardMaxToSeed(self, seed):
-		return self.__existKeyInDic__(seed, self.dic_jaccardMax)
-
+	""" Methods to get the DICs to a specific seed """
+	def getDicToSeed(self, sim_measure, seed):
+		dic_measure = self.__verifyMeasure__(sim_measure)
+		return self.__sortTopNFromDic__(dic_measure, seed, 0)
 
 	""" Methods to get the TOP N to a specific seed """
-	def getTopNBaselineToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_baseline, seed, n)
+	def getTopNToSeed(self, sim_measure, seed, n):
+		dic_measure = self.__verifyMeasure__(sim_measure)
+		return self.__sortTopNFromDic__(dic_measure, seed, n)
 
-	def getTopNDiceBinToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_diceBin, seed, n)
+	""" Methods to get the TOP N to ALL seeds """
+	def getTopNToAllSeeds(self, sim_measure, n):
+		dic_measure = self.__verifyMeasure__(sim_measure)
+		return self.__sortTopNFromAllDic__(dic_measure, n)
 
-	def getTopNJaccardToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_jaccard, seed, n)
+	""" Methods to print the TOP N to a specific seed """
+	def printTopNToSeed(self, sim_measure, seed, n):
+		dic_terms =  self.getTopNToSeed(sim_measure, seed, n)
+		self.__printDic__(dic_terms)
 
-	def getTopNCosineBinToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_cosineBin, seed, n)
-
-	def getTopNCosineToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_cosine, seed, n)
-
-	def getTopNCityToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_city, seed, n)
-	
-	def getTopNEuclideanToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_euclidean, seed, n)
-
-	def getTopNJsToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_js, seed, n)
-
-	def getTopNLinToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_lin, seed, n)
-
-	def getTopNJaccardMaxToSeed(self, seed, n):
-		return self.__sortTopNFromDic__(self.dic_jaccardMax, seed, n)
-
-	def getTopNJaccardMaxToAll(self, n):
-		return self.__sortTopNFromAllDic__(self.dic_jaccardMax, n)
-
+	""" Methods to print the TOP N to ALL seeds """
+	def printTopNToAllSeeds(self, sim_measure, n):
+		dic_terms = self.getTopNToAllSeeds(sim_measure, n)
+		self.__printDic__(dic_terms)
 
 	""" Internal methods """
+	def __verifyMeasure__(self, sim_measure):
+		if sim_measure == 'baseline': dic_measure = self.dic_baseline
+		elif sim_measure == 'dicebin': dic_measure = self.dic_diceBin
+		elif sim_measure == 'dicemin': dic_measure = self.dic_diceMin
+		elif sim_measure == 'jaccard': dic_measure = self.dic_jaccard
+		elif sim_measure == 'cosinebin': dic_measure = self.dic_cosineBin
+		elif sim_measure == 'cosine': dic_measure = self.dic_cosine
+		elif sim_measure == 'city': dic_measure = self.dic_city
+		elif sim_measure == 'euclidean': dic_measure = self.dic_euclidean
+		elif sim_measure == 'js': dic_measure = self.dic_js
+		elif sim_measure == 'lin': dic_measure = self.dic_lin
+		elif sim_measure == 'jaccardmax': dic_measure = self.dic_jaccardMax
+		return dic_measure
+
 	def __sortTopNFromDic__(self, dic, seed, n):
-		dic_terms = {}
+		dic_terms = OrderedDict()
 		if self.__existKeyInDic__(seed, dic):
+			dic_related = {}
+			dic_terms[seed] = {'terms': []}
 			for related_term in dic[seed]:
-				dic_terms[related_term] = dic[seed][related_term]
-			return sorted(dic_terms.items(), key=itemgetter(1), reverse=True)[0:n]
+				dic_related[related_term] = dic[seed][related_term]
+			if n == 0: n = None
+			dic_ordered = sorted(dic_related.items(), key=itemgetter(1), reverse=True)[0:n]
+			for list_ordered in dic_ordered:
+				dic_terms[seed]['terms'].append({list_ordered[0]:str(list_ordered[1])})
+		return dic_terms
 
 	def __sortTopNFromAllDic__(self, dic, n):
-		seed = 'customer_information'
-		dic_terms = {}
-		if self.__existKeyInDic__(seed, dic):
-			for related_term in dic[seed]:
-				dic_terms[related_term] = dic[seed][related_term]
-			return sorted(dic_terms.items(), key=itemgetter(1), reverse=True)[0:n]
+		dic_terms = OrderedDict()
+		dic_related = {}
+		for seed in self.list_seeds:
+			if self.__existKeyInDic__(seed, dic):
+				dic_terms[seed] = {'terms': []}
+				for related_term in dic[seed]:
+					dic_related[related_term] = dic[seed][related_term]
+				if n == 0: n = None
+				dic_ordered = sorted(dic_related.items(), key=itemgetter(1), reverse=True)[0:n]
+				for list_ordered in dic_ordered:
+					dic_terms[seed]['terms'].append({list_ordered[0]:str(list_ordered[1])})
+		return dic_terms
 
 	def __existKeyInDic__(self, key, dic):
 		if dic.has_key(key):
 			return dic
 		else:
-			print bcolors.FAIL+'ERROR: System cannot found the term "'+key+'" in dictionary'+bcolors.ENDC
+			print bcolors.WARNING+'WARNING: System cannot found the term "'+key+'" in corpus'+bcolors.ENDC
+			print ''
 			return False
+
+	def __printDic__(self, dic_terms):
+		for seed in dic_terms:
+			print 'Seed: '+seed
+			for index_related_term in dic_terms[seed]['terms']:
+					similarity = index_related_term[index_related_term.keys()[0]]
+					term = index_related_term.keys()[0]
+					print 'Related term: '+term+'\nSimilarity  : '+similarity
+			print ''
 
 #if __name__ == '__main__':
 #	term = Measures('/home/roger/Desktop/Temp/tempMergedFiles_T3.txt', '../misc/seeds.txt')
