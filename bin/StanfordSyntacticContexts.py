@@ -27,12 +27,12 @@ class StanfordSyntacticContexts:
 		self.dic_sv = {}
 		self.dic_vo = {}
 
-		os.system('rm '+self.temp_folder+'SyntacticRelations.txt')
-		try:
-			self.temp_file = codecs.open(self.temp_folder+'SyntacticRelations.txt', 'a', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+self.temp_folder+'SyntacticRelations.txt file'+bcolors.ENDC
-			sys.exit(2)
+		#os.system('rm '+self.temp_folder+'SyntacticRelations.txt')
+		#try:
+		#	self.temp_file = codecs.open(self.temp_folder+'SyntacticRelations.txt', 'a', 'utf-8')
+		#except IOError:
+		#	print bcolors.FAIL+'ERROR: System cannot open the '+self.temp_folder+'SyntacticRelations.txt file'+bcolors.ENDC
+		#	sys.exit(2)
 
 		i = 0
 		for corpus_file in self.files:
@@ -141,7 +141,7 @@ class StanfordSyntacticContexts:
 
 	def writeDicAN(self, filename):
 		try:
-			output_an = codecs.open(filename+'.txt', 'w', 'utf-8')
+			output_an = codecs.open(filename, 'w', 'utf-8')
 			for id_an in self.dic_an:
 				output_an.write(id_an+'#'+str(self.dic_an[id_an])+'\n')
 			output_an.close() 
@@ -158,7 +158,7 @@ class StanfordSyntacticContexts:
 
 	def writeDicSV(self, filename):
 		try:
-			output_sv = codecs.open(filename+'.txt', 'w', 'utf-8')
+			output_sv = codecs.open(filename, 'w', 'utf-8')
 			for id_sv in self.dic_sv:
 				output_sv.write(id_sv+'#'+str(self.dic_sv[id_sv])+'\n')
 			output_sv.close() 
@@ -175,7 +175,7 @@ class StanfordSyntacticContexts:
 
 	def writeDicVO(self, filename):
 		try:
-			output_vo = codecs.open(filename+'.txt', 'w', 'utf-8')
+			output_vo = codecs.open(filename, 'w', 'utf-8')
 			for id_vo in self.dic_vo:
 				output_vo.write(id_vo+'#'+str(self.dic_vo[id_vo])+'\n')
 			output_vo.close() 
