@@ -35,17 +35,17 @@ class Measures:
 			ctxfreqfile = codecs.open(ctx_freq_file, 'r', 'utf-8')
 		except IOError:
 			print bcolors.FAIL+'ERROR: System cannot open the '+ctx_freq_file+' file'+bcolors.ENDC
-			sys.exit()
+			sys.exit(2)
 		
 		for line in ctxfreqfile:
 			modifier, noun, freq = line.split('#')
 			list_nouns.append(noun)
 			freq = freq.replace('\n', '')
-			self.dic_ctx[noun][modifier] = int(freq)
+			self.dic_ctx[noun][modifier] = float(freq)
 			if self.dic_sum_freq_noun.has_key(noun):
-				self.dic_sum_freq_noun[noun] += int(freq)
+				self.dic_sum_freq_noun[noun] += float(freq)
 			else:
-				self.dic_sum_freq_noun[noun] = int(freq)
+				self.dic_sum_freq_noun[noun] = float(freq)
 			if self.dic_qty_noun.has_key(noun):
 				self.dic_qty_noun[noun] += 1
 			else:
