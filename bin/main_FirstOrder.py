@@ -35,7 +35,7 @@ def main(type_atc, argv):
 		Uses count.pl from NGram Statistical Package (NSP) to get Bigrams in a window
 	
 	print 'Getting bigrams to W'+window_size+'_Statistical_corpus.txt'
-	command = 'count.pl --ngram 2 --window '+window_size+' '+temp_folder+'W'+window_size+'_Statistical_corpus.txt '+temp_folder+'Statistical_corpus.txt'
+	command = 'count.pl --ngram 2 --token ../misc/tokens_nsp.pl --window '+window_size+' '+temp_folder+'W'+window_size+'_Statistical_corpus.txt '+temp_folder+'Statistical_corpus.txt'
 	os.system(command)
 
 	try:
@@ -113,7 +113,7 @@ def main(type_atc, argv):
 		else:
 			first_line = True
 
-	thesaurus = Thesaurus(output_folder+'T'+window_size+'_'+type_atc+'.xml', window_size, max_qty_terms)
+	thesaurus = Thesaurus(output_folder+'T'+window_size+'_'+type_atc+'.xml',max_qty_terms)
 	thesaurus.write(dic_terms)
 	"""
 if __name__ == "__main__":
