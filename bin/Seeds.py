@@ -1,17 +1,12 @@
 #!/usr/bin/python
 
-import sys, codecs
-from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 
 class Seeds:
 	def __init__(self, fileinput):
 		self.list_seeds = []
-
-		try:
-			file_seeds = codecs.open(fileinput, 'r', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+fileinput+' file'+bcolors.ENDC
-			sys.exit()
+		misc = Miscelaneous()
+		file_seeds = misc.openFile(fileinput, 'r')
 
 		for line in file_seeds:
 			if line != '':

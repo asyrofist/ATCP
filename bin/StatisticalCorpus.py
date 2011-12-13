@@ -1,12 +1,14 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, os, re, codecs, time
+import sys, os, re
 from collections import defaultdict
-from ParseXml import ParseXml
+from collections import OrderedDict
+from ParsePalavrasXml import ParsePalavrasXml
 from ParseStanfordXml import ParseStanfordXml
 from Miscelaneous import bcolors
 from Miscelaneous import Miscelaneous
+from Seeds import Seeds
 
 class StatisticalCorpus:
 	def __init__(self, input_folder, temp_folder, min_word_size, window_size):
@@ -23,11 +25,7 @@ class StatisticalCorpus:
 		self.misc = Miscelaneous()
 
 		os.system('rm '+self.temp_folder+'Statistical_corpus.txt')
-		try:
-			self.temp_file = codecs.open(self.temp_folder+'Statistical_corpus.txt', 'a', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+self.temp_folder+'Statistical_corpus.txt file'+bcolors.ENDC
-			sys.exit(2)
+		self.temp_file = self.misc.openFile(self.temp_folder+'Statistical_corpus.txt', 'a')
 
 	def buildCorpus_pt(self):
 		print 'Building statistical corpus file at '+self.temp_folder+'...'
@@ -36,7 +34,7 @@ class StatisticalCorpus:
 			i += 1
 			if re.match('.*xml$', corpus_file):
 				corpus_filename = corpus_file.split('.')[0]
-				xmlfile = ParseXml(self.root+''+corpus_file)
+				xmlfile = ParsePalavrasXml(self.root+''+corpus_file)
 				dic_terms = xmlfile.getDicTerms()
 				dic_nouns = xmlfile.getNouns()
 				#dic_verbs = xmlfile.getVerbs()
@@ -81,7 +79,7 @@ class StatisticalCorpus:
 				xmlfile = ParseStanfordXml(self.root+''+corpus_file)
 				dic_terms = xmlfile.getDicTerms()
 				self.__getRelationsInAWindow__(dic_terms, self.window_size)
-				self.__progress_bar__(i, self.qty_documents, 100)
+				self.misc.progress_bar(i, self.qty_documents, 100)
 		self.temp_file.close()
 				
 	""" GET RELATIONS IN A WINDOW """
@@ -109,3 +107,38 @@ class StatisticalCorpus:
 			id_t = 's'+str(id_sentence)+'_'+str(id_word)
 		self.temp_file.write(string_corpus)
 
+	def buildSTRelations(self, file_input, seeds_file):
+		seeds = Seeds(seeds_file)
+		list_seeds = seeds.getSeeds()
+		dic_tuplas = {}
+		file_bigrams = self.misc.openFile(self.temp_folder+''+file_input, 'r')
+		first_line = ''
+
+		for line in file_bigrams:
+			if first_line != '':
+				part = line.split('<>')
+				term_type1 = part[0]
+				term_type2 = part[1]
+				term1, type1 = term_type1.split('__')
+				term2, type2 = term_type2.split('__')
+
+				freq_tupla = part[2].split(' ')[0]
+				freq_term1 = part[2].split(' ')[1]
+				freq_term2 = part[2].split(' ')[2]
+				MUDAR A ORDEM DOS TERMOS -> COLOCAR MODIFIER#NOUN#FREQUENCY
+				if type1 == 'N' and type2 == 'N' and term1 != term2:
+					if term1 in list_seeds:				
+						dic_tuplas[term1+'#'+term2+'#'] = int(freq_tupla)
+					elif term2 in list_seeds:
+						if dic_tuplas.has_key(term2+'#'+term1+'#'):
+							dic_tuplas[term2+'#'+term1+'#'] += int(freq_tupla) 
+						else:
+							dic_tuplas[term2+'#'+term1+'#'] = int(freq_tupla)
+			else:
+				first_line = line
+		file_bigrams.close()
+
+		file_relations = self.misc.openFile(self.temp_folder+'W'+str(self.window_size)+'_Relations.txt', 'w')
+		for tupla in dic_tuplas:
+			file_relations.write(tupla+''+str(dic_tuplas[tupla])+'\n')
+		file_relations.close()

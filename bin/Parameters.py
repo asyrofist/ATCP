@@ -1,23 +1,20 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, getopt, codecs, re, os
+import sys, getopt, re, os
 from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 
 class Parameters:
 
 	def __init__(self, type_atc, argv):
+		self.misc = Miscelaneous()
 		self.input_folder = '../../Data/Corpus/'
 		self.output_folder = '../../Data/Output/'
 		self.temp_folder = '../../Data/Temp/'
 		self.seeds_file = '../misc/seeds.txt'
-
-		try:
-			file_parameters = codecs.open('../misc/parameters.cfg', 'r', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the parameters.cfg file to get default configuration'+bcolors.ENDC
-			sys.exit(2)
-
+		
+		file_parameters = self.misc.openFile('../misc/parameters.cfg', 'r')
 		for line in file_parameters:
 			if re.match('language', line):
 				self.language = line.split('=')[1].replace('\n','')
@@ -33,7 +30,6 @@ class Parameters:
 				self.svd_dimension = line.split('=')[1].replace('\n','')
 			if re.match('window_size', line):
 				self.window_size = line.split('=')[1].replace('\n','')
-
 		file_parameters.close()
 
 		try:
@@ -66,6 +62,22 @@ class Parameters:
 			elif opt in ("-s", "--seeds"):
 				if os.path.isfile(arg): self.seeds_file = arg 
 				else: print bcolors.WARNING+'WARNING: '+arg+' is not a file, setting '+self.seeds+' as seeds file'+bcolors.ENDC
+			elif opt in ("-S", "--sim_measure"):
+				if arg == 'mutual_information' \
+					or arg == 'baseline' \
+					or arg == 'dicebin' \
+					or arg == 'dicemin' \
+					or arg == 'jaccard' \
+					or arg == 'cosinebin' \
+					or arg == 'cosine' \
+					or arg == 'city' \
+					or arg == 'euclidean' \
+					or arg == 'js' \
+					or arg == 'lin' \
+					or arg == 'jaccardmax': 
+					self.sim_measure = arg
+				else: 
+					print bcolors.WARNING+'WARNING: "'+arg+'" is not a supported similarity measure, setting to "'+self.sim_measure+'" as default similarity measure. 						\nSimilarity measures supported by the system:\n - mutual_information [used only in First Order construction]\n - baseline\n - dicebin\n - dicemin\n - jaccard\n - cosinebin\n - cosine\n - city\n - euclidean\n - js\n - lin\n - jaccardmax'+bcolors.ENDC 
 
 			if type_atc == 'FirstOrder':
 				if opt in ("-p", "--mi_precision"):
@@ -76,12 +88,6 @@ class Parameters:
 			elif type_atc == 'HigherOrder':
 				if opt in ("-d", "--svd_dimension"):
 					self.svd_dimension = arg
-				elif opt in ("-s", "--sim_measure"):
-					self.sim_measure = arg
-
-			else:
-				if opt in ("-S", "--sim_measure"):
-					self.sim_measure = arg
 
 	def getInputFolder(self):
 		return self.input_folder
@@ -127,6 +133,7 @@ class Parameters:
    -o  --output=              Output folder to receive the data
    -p  --mi_precision=        Precision of the Mutual Information result
    -s  --seeds=               File containing seeds to the thesaurus
+	-S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -w  --window_size=         Size of the window to compute the correlation analysis
    -t  --temp=                Temp folder to receive temporary data
    -h  --help                 Display this help and exit

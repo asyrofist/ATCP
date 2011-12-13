@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys
+import sys, codecs
 
 class Miscelaneous:
 	def __init__(self):
@@ -17,6 +17,14 @@ class Miscelaneous:
 		else:
 			sys.stdout.write("[%3i%%]\r" % (percent))
 			sys.stdout.flush()
+
+	def openFile(self, fileinput, mode):
+		try:
+			opened_file = codecs.open(fileinput, mode, 'utf-8')
+		except IOError:
+			print bcolors.FAIL+'ERROR: System cannot open the '+fileinput+' file'+bcolors.ENDC
+			sys.exit(2)
+		return opened_file
 
 class bcolors:
     HEADER = '\033[95m'

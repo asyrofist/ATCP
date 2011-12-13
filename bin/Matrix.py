@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, re, codecs, numpy, scipy.sparse
+import sys, re, numpy, scipy.sparse
 
 from sparsesvd import sparsesvd
 from math import *
@@ -9,9 +9,11 @@ from numpy import *
 from numpy.linalg import svd
 from collections import OrderedDict
 from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 
 class Matrix:
 	def __init__(self, temp_folder, svd_dimension, type_relation):
+		self.misc = Miscelaneous()
 		self.temp_folder = temp_folder
 		self.svd_dimension = svd_dimension
 		self.type_relation = type_relation
@@ -33,10 +35,10 @@ class Matrix:
 		line_row = ''
 		line_column = ''
 
-		file_relations = self.__openFile__(self.temp_folder+''+self.type_relation+'_Relations.txt', 'r')
-		file_row = self.__openFile__(self.temp_folder+''+self.type_relation+'_Matrix_row.txt', 'w')
-		file_column = self.__openFile__(self.temp_folder+''+self.type_relation+'_Matrix_column.txt', 'w')
-		#file_data = self.__openFile__(temp_folder+'matrix_data.txt', 'w')
+		file_relations = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Relations.txt', 'r')
+		file_row = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Matrix_row.txt', 'w')
+		file_column = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Matrix_column.txt', 'w')
+		#file_data = self.misc.openFile(temp_folder+'matrix_data.txt', 'w')
 
 		for line in file_relations:
 			line = re.sub('\n', '', line)
@@ -85,7 +87,7 @@ class Matrix:
 		#file_data.close()
 
 	def applySvd(self):
-		file_matrix_svd = self.__openFile__(self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt', 'w')
+		file_matrix_svd = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt', 'w')
 		len_row = max(self.row)+1
 		len_col = max(self.col)+1
 		print 'Computing SVD to '+self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt...'
@@ -106,7 +108,7 @@ class Matrix:
 		file_matrix_svd.close()
 
 	def buildRelationsSvd(self):
-		file_relations_svd = self.__openFile__(self.temp_folder+''+self.type_relation+'_Relations_SVD.txt', 'w')
+		file_relations_svd = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Relations_SVD.txt', 'w')
 		index_noun = 0
 
 		for row_data in self.svd_matrix:
@@ -117,11 +119,3 @@ class Matrix:
 			index_noun += 1
 
 		file_relations_svd.close()
-
-	def __openFile__(self, fileinput, mode):
-		try:
-			opened_file = codecs.open(fileinput, mode, 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+fileinput+' file'+bcolors.ENDC
-			sys.exit(2)
-		return opened_file

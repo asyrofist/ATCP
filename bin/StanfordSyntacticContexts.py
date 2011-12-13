@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import re, codecs, os, sys
+import re, os, sys
 
 from ParseStanfordXml import ParseStanfordXml
 from Miscelaneous import Miscelaneous
@@ -27,13 +27,6 @@ class StanfordSyntacticContexts:
 		self.dic_sv = {}
 		self.dic_vo = {}
 
-		#os.system('rm '+self.temp_folder+'SyntacticRelations.txt')
-		#try:
-		#	self.temp_file = codecs.open(self.temp_folder+'SyntacticRelations.txt', 'a', 'utf-8')
-		#except IOError:
-		#	print bcolors.FAIL+'ERROR: System cannot open the '+self.temp_folder+'SyntacticRelations.txt file'+bcolors.ENDC
-		#	sys.exit(2)
-
 		i = 0
 		for corpus_file in self.files:
 			i += 1
@@ -47,9 +40,7 @@ class StanfordSyntacticContexts:
 
 	def __extractRelations__(self):
 		i = 0
-		#id_sentence = 1
-		#id_relation = 500
-		#id_nt = 's'+str(id_sentence)+'_'+str(id_relation)
+
 		for id_nt in self.dic_nt:
 			if self.dic_nt[id_nt]['cat'] == 'nn':
 				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
@@ -95,20 +86,12 @@ class StanfordSyntacticContexts:
 					self.__addElementDicSV__(context+'#'+noun)
 			
 			elif re.match('^(dobj|iobj)$', self.dic_nt[id_nt]['cat']):
-				#print id_nt
 				noun = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				noun = re.sub('-', '_', noun)
 				context = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
 				context = re.sub('-', '_', context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicVO__(context+'#'+noun)
-				#print id_nt +' -> '+self.dic_nt[id_nt]['cat']
-
-			#	id_relation += 1
-			#	id_nt = 's'+str(id_sentence)+'_'+str(id_relation)
-			#id_relation = 500
-			#id_sentence += 1
-			#id_nt = 's'+str(id_sentence)+'_'+str(id_relation)
 
 	def __addElementDicAN__(self, relation):
 		if self.dic_an.has_key(relation):
@@ -128,57 +111,22 @@ class StanfordSyntacticContexts:
 		else:
 			self.dic_vo[relation] = 1
 
-	"""
-	 Get and Print methods
-	"""
+	""" Get and Print methods """
 
-	def getDicAN(self):
-		return self.dic_an
+	def getDic(self, type_relation):
+		if type_relation == 'AN': return self.dic_an
+		elif type_relation == 'SV': return self.dic_sv
+		elif type_relation == 'VO': return self.dic_vo
 
-	def printDicAN(self):
-		for id_an in self.dic_an:
-			print id_an+' = '+str(self.dic_an[id_an])
+	def printDic (self, type_relation):
+		dic_relation = getDic(type_relation)
+		for id_relation in self.dic_relation:
+			print id_relation+' = '+str(self.dic_relation[id_relation])
 
-	def writeDicAN(self, filename):
-		try:
-			output_an = codecs.open(filename, 'w', 'utf-8')
-			for id_an in self.dic_an:
-				output_an.write(id_an+'#'+str(self.dic_an[id_an])+'\n')
-			output_an.close() 
-		except IOError:
-			print 'The system could not open the file '+filename+' to write'
-			sys.exit(2)
-
-	def getDicSV(self):
-		return self.dic_sv
-
-	def printDicSV(self):
-		for id_sv in self.dic_sv:
-			print id_sv+' = '+str(self.dic_sv[id_sv])
-
-	def writeDicSV(self, filename):
-		try:
-			output_sv = codecs.open(filename, 'w', 'utf-8')
-			for id_sv in self.dic_sv:
-				output_sv.write(id_sv+'#'+str(self.dic_sv[id_sv])+'\n')
-			output_sv.close() 
-		except IOError:
-			print 'The system could not open the file '+filename+' to write'
-			sys.exit(2)
-
-	def getDicVO(self):
-		return self.dic_vo
-
-	def printDicVO(self):
-		for id_vo in self.dic_vo:
-			print id_vo+' = '+str(self.dic_vo[id_vo])
-
-	def writeDicVO(self, filename):
-		try:
-			output_vo = codecs.open(filename, 'w', 'utf-8')
-			for id_vo in self.dic_vo:
-				output_vo.write(id_vo+'#'+str(self.dic_vo[id_vo])+'\n')
-			output_vo.close() 
-		except IOError:
-			print 'The system could not open the file '+filename+' to write'
-			sys.exit(2)
+	def writeDic (self, type_relation):
+		misc = Miscelaneous()
+		file_relation = misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
+		dic_relation = self.getDic(type_relation)
+		for id_relation in dic_relation:
+			file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')
+		file_relation.close()

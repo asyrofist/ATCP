@@ -2,17 +2,14 @@
 #-*- coding: utf-8 -*-
 
 import sys, codecs, re, os
-from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 
 class Thesaurus:
 	def __init__(self, output_file, max_qty_terms):
 		self.output_file = output_file
 		self.max_qty_terms = max_qty_terms
-		try:
-			self.thesaurus_file = codecs.open(output_file, 'w', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the  file '+output_file+''+bcolors.ENDC
-			sys.exit(2)
+		misc = Miscelaneous()
+		self.thesaurus_file = misc.openFile(output_file, 'w')
 
 	def write(self, dic_terms):
 		self.thesaurus_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<thesaurus>\n')
@@ -23,7 +20,7 @@ class Thesaurus:
 				if qty_terms < int(self.max_qty_terms):
 					similarity = index_related_term[index_related_term.keys()[0]]
 					if not '.' in similarity: similarity += '.'
-					for i in range(len(similarity),15): similarity += '0'
+					for i in range(len(similarity),18): similarity += '0'
 					term = index_related_term.keys()[0]
 					self.thesaurus_file.write('\t\t<related similarity="'+similarity+'">'+term+'</term>\n')
 					qty_terms += 1

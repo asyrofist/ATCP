@@ -1,15 +1,17 @@
 #!/usr/bin/python
 
-import math, codecs, sys
+import math, codecs, sys, os, re
 
 from collections import defaultdict
 from collections import OrderedDict
 from operator import itemgetter
 from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 from Seeds import Seeds
 
 class Measures:
 	def __init__(self, ctx_freq_file, seedfile):
+		self.misc = Miscelaneous()
 		seeds_file = Seeds(seedfile)
 		self.list_seeds = seeds_file.getSeeds()
 		self.dic_baseline = defaultdict(dict)
@@ -30,12 +32,7 @@ class Measures:
 
 	def __buildHashs__(self, ctx_freq_file, seedfile):
 		list_nouns = []
-
-		try:
-			ctxfreqfile = codecs.open(ctx_freq_file, 'r', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+ctx_freq_file+' file'+bcolors.ENDC
-			sys.exit(2)
+		ctxfreqfile = self.misc.openFile(ctx_freq_file, 'r')
 		
 		for line in ctxfreqfile:
 			modifier, noun, freq = line.split('#')
@@ -236,6 +233,87 @@ class Measures:
 					term = index_related_term.keys()[0]
 					print 'Related term: '+term+'\nSimilarity  : '+similarity
 			print ''
+
+class MutualInformation:
+	def __init__(self, temp_folder, file_input, seedfile, mi_precision):
+		self.window_size = file_input[1:-23]
+		self.temp_folder = temp_folder
+		self.misc = Miscelaneous()
+		seeds_file = Seeds(seedfile)
+		self.list_seeds = seeds_file.getSeeds()
+		self.first_line = ''
+		self.dic_tuplas = defaultdict(dict)
+		self.dic_terms = OrderedDict()
+		self.__buildMI__(file_input, mi_precision)
+
+	def __buildMI__(self, file_input, mi_precision):
+		filename_input = file_input[:-4]
+		file_bigrams = self.misc.openFile(self.temp_folder+''+file_input, 'r')
+		for line in file_bigrams:
+			if self.first_line != '':
+				part = line.split('<>')
+				term_type1 = part[0]
+				term_type2 = part[1]
+				term1, type1 = term_type1.split('__')
+				term2, type2 = term_type2.split('__')
+
+				freq_tupla = part[2].split(' ')[0]
+				freq_term1 = part[2].split(' ')[1]
+				freq_term2 = part[2].split(' ')[2]
+
+				if type1 == 'N' and type2 == 'N' and term1 != term2:
+					if term1 in self.list_seeds:				
+						self.dic_tuplas[term1+'<>'+term2+'<>']['freq_tupla'] = int(freq_tupla)
+						self.dic_tuplas[term1+'<>'+term2+'<>']['freq_term1'] = int(freq_term1)
+						self.dic_tuplas[term1+'<>'+term2+'<>']['freq_term2'] = int(freq_term2)
+					elif term2 in self.list_seeds:
+						if self.dic_tuplas.has_key(term2):
+							self.dic_tuplas[term2+'<>'+term1+'<>']['freq_tupla'] += int(freq_tupla)
+						else:
+							self.dic_tuplas[term2+'<>'+term1+'<>']['freq_tupla'] = int(freq_tupla)
+							self.dic_tuplas[term2+'<>'+term1+'<>']['freq_term1'] = int(freq_term2)
+							self.dic_tuplas[term2+'<>'+term1+'<>']['freq_term2'] = int(freq_term1)
+
+			else:
+				self.first_line = line
+		file_bigrams.close()
+
+		print 'Building list of terms and their relations in '+filename_input+'_to_MI.txt'
+		file_relations = self.misc.openFile(self.temp_folder+''+filename_input+'_to_MI.txt', 'w')
+		file_relations.write(self.first_line)
+		for tupla in self.dic_tuplas:
+			file_relations.write(tupla+''+str(self.dic_tuplas[tupla]['freq_tupla'])+' '+str(self.dic_tuplas[tupla]['freq_term1'])+' '+str(self.dic_tuplas[tupla]['freq_term2'])+'\n')
+		file_relations.close()
+
+		print 'Getting Mutual Information to IMT_Statistical_corpus.txt'
+		command = "statistic.pl tmi.pm -precision "+mi_precision+' '+self.temp_folder+'IM'+self.window_size+'_SecondOrder.txt '+self.temp_folder+''+filename_input+'_to_MI.txt'
+		os.system(command)
+
+	def getDicMI(self):
+		file_mi = self.misc.openFile(self.temp_folder+'IM'+self.window_size+'_SecondOrder.txt', 'r')
+
+		first_line = False
+		list_used_seeds = []
+		for line in file_mi:
+			if first_line:
+				seed, none, term, none, rank, true_mi, freq_1, freq_2, freq_3 = re.split(r'[ |<>]', line)
+				if seed in self.list_seeds and seed not in list_used_seeds:
+					list_used_seeds.append(seed)
+					self.dic_terms[seed] = {'terms': []}
+				if seed in self.list_seeds: 
+					self.dic_terms[seed]['terms'].append({term:true_mi})	
+			else:
+				first_line = True
+		return self.dic_terms
+
+	def getDicBigrams(self):
+		return self.dic_tuplas
+
+	def printDicBigrams(self):
+		print self.first_line,
+		for tupla in self.dic_tuplas:
+			print tupla,self.dic_tuplas[tupla]['freq_tupla'],self.dic_tuplas[tupla]['freq_term1'],self.dic_tuplas[tupla]['freq_term2']
+	
 
 #if __name__ == '__main__':
 #	term = Measures('/home/roger/Desktop/Temp/tempMergedFiles_T3.txt', '../misc/seeds.txt')

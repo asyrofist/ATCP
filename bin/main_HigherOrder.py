@@ -1,16 +1,13 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, re, codecs, os
+import sys, os
 
-from collections import defaultdict
 from Parameters import Parameters
-from Seeds import Seeds
 from Measures import Measures
 from Matrix import Matrix
 from Thesaurus import Thesaurus
 from StanfordSyntacticContexts import StanfordSyntacticContexts
-from Miscelaneous import bcolors
 
 def main(type_atc, argv):
 	parameters = Parameters(type_atc, argv)
@@ -25,9 +22,10 @@ def main(type_atc, argv):
 	svd_dimension = int(parameters.getSvdDimension())
 
 	ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size)
-	ling_corpus.writeDicAN(temp_folder+'AN_Relations.txt')
-	ling_corpus.writeDicSV(temp_folder+'SV_Relations.txt')
-	ling_corpus.writeDicVO(temp_folder+'VO_Relations.txt')
+	ling_corpus.writeDic('AN')
+	ling_corpus.writeDic('SV')
+	ling_corpus.writeDic('VO')
+	del ling_corpus
 
 	matrix_an = Matrix(temp_folder, svd_dimension, 'AN')	
 	matrix_an.buildMatrixFromFile()
@@ -53,7 +51,7 @@ def main(type_atc, argv):
 
 	measures = Measures(temp_folder+'RelationsHigherOrder.txt', seeds_file)
 	dic_topn = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
-	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'.xml',max_qty_terms)
+	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'_'+sim_measure+'.xml',max_qty_terms)
 	thesaurus.write(dic_topn)
 
 if __name__ == "__main__":

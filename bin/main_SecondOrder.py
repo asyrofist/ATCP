@@ -1,9 +1,8 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, re, codecs, os
+import sys, os
 
-from collections import defaultdict
 from Parameters import Parameters
 from Seeds import Seeds
 from Measures import Measures
@@ -21,12 +20,12 @@ def main(type_atc, argv):
 	temp_folder = parameters.getTempFolder()
 	seeds_file = parameters.getSeedsFile()
 	sim_measure = parameters.getSimilarityMeasure() 
-	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'.xml',max_qty_terms)
+	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'_'+sim_measure+'.xml',max_qty_terms)
 
 	ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size)
-	ling_corpus.writeDicAN(temp_folder+'AN_Relations.txt')
-	ling_corpus.writeDicSV(temp_folder+'SV_Relations.txt')
-	ling_corpus.writeDicVO(temp_folder+'VO_Relations.txt')
+	ling_corpus.writeDic('AN')
+	ling_corpus.writeDic('SV')
+	ling_corpus.writeDic('VO')
 
 	print 'Merging terms to Relations2ndOrder.txt'
 	command = "cat "+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'

@@ -1,8 +1,9 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import re, sys, codecs
+import re, sys
 from Miscelaneous import bcolors
+from Miscelaneous import Miscelaneous
 
 class ParseStanfordXml:
 
@@ -20,11 +21,8 @@ class ParseStanfordXml:
 		self.__buildDics__(filename)
 
 	def __buildDics__(self, filename):
-		try:
-			xmlfile = codecs.open(filename, 'r', 'utf-8')
-		except IOError:
-			print bcolors.FAIL+'ERROR: System cannot open the '+filename+' file'+bcolors.ENDC
-			sys.exit(2)
+		misc = Miscelaneous()
+		xmlfile = misc.openFile(filename, 'r')
 
 		record_dependencies = False
 		record_collapsed = False
@@ -302,6 +300,6 @@ class ParseStanfordXml:
 		for verb in list_verbs:
 			print verb+', ',
 
-if __name__ == '__main__':
-	ps = ParseStanfordXml('/home/roger/Desktop/Temp/corpus.xml')
-	ps.printDicNonTerminals()
+#if __name__ == '__main__':
+#	ps = ParseStanfordXml('/home/roger/Desktop/Temp/corpus.xml')
+#	ps.printDicNonTerminals()
