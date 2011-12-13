@@ -1,11 +1,10 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import re, sys
+import re, sys, codecs
 from Miscelaneous import bcolors
-from Miscelaneous import Miscelaneous
 
-class ParsePalavrasXml:
+class ParseXml:
 
 	def __init__(self, filename):
 		self.dic_t = {}
@@ -21,8 +20,11 @@ class ParsePalavrasXml:
 		self.__buildDics__(filename)
 
 	def __buildDics__(self, filename):
-		misc = Miscelaneous()
-		xmlfile = misc.openFile(filename, 'r')
+		try:
+			xmlfile = codecs.open(filename, 'r', 'utf-8')
+		except IOError:
+			print bcolors.FAIL+'ERROR: System cannot open the '+filename+' file'+bcolors.ENDC
+			sys.exit()
 
 		for line in xmlfile:
 			if '<t ' in line:
