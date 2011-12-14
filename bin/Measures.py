@@ -30,6 +30,9 @@ class Measures:
 		self.dic_qty_noun = {}
 		self.__buildHashs__(ctx_freq_file, seedfile)
 
+	def __del__(self):
+		pass
+
 	def __buildHashs__(self, ctx_freq_file, seedfile):
 		list_nouns = []
 		ctxfreqfile = self.misc.openFile(ctx_freq_file, 'r')
@@ -206,6 +209,7 @@ class Measures:
 	def __sortTopNFromAllDic__(self, dic, n):
 		dic_terms = OrderedDict()
 		dic_related = {}
+		
 		for seed in self.list_seeds:
 			if self.__existKeyInDic__(seed, dic):
 				dic_terms[seed] = {'terms': []}
@@ -246,6 +250,9 @@ class MutualInformation:
 		self.dic_terms = OrderedDict()
 		self.__buildMI__(file_input, mi_precision)
 
+	def __del__(self):
+		pass
+
 	def __buildMI__(self, file_input, mi_precision):
 		filename_input = file_input[:-4]
 		file_bigrams = self.misc.openFile(self.temp_folder+''+file_input, 'r')
@@ -278,14 +285,12 @@ class MutualInformation:
 				self.first_line = line
 		file_bigrams.close()
 
-		print 'Building list of terms and their relations in '+filename_input+'_to_MI.txt'
 		file_relations = self.misc.openFile(self.temp_folder+''+filename_input+'_to_MI.txt', 'w')
 		file_relations.write(self.first_line)
 		for tupla in self.dic_tuplas:
 			file_relations.write(tupla+''+str(self.dic_tuplas[tupla]['freq_tupla'])+' '+str(self.dic_tuplas[tupla]['freq_term1'])+' '+str(self.dic_tuplas[tupla]['freq_term2'])+'\n')
 		file_relations.close()
 
-		print 'Getting Mutual Information to IMT_Statistical_corpus.txt'
 		command = "statistic.pl tmi.pm -precision "+mi_precision+' '+self.temp_folder+'IM'+self.window_size+'_SecondOrder.txt '+self.temp_folder+''+filename_input+'_to_MI.txt'
 		os.system(command)
 

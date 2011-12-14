@@ -27,7 +27,7 @@ class Matrix:
 		#self.line_data = ''
 
 	def __del__(self):
-		print "Removing Object from memory..."
+		pass
 
 	def buildMatrixFromFile(self):
 		index_modifier = 0
@@ -90,7 +90,6 @@ class Matrix:
 		file_matrix_svd = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt', 'w')
 		len_row = max(self.row)+1
 		len_col = max(self.col)+1
-		print 'Computing SVD to '+self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt...'
 
 		sparse_matrix = scipy.sparse.csc_matrix( (self.data,(self.row,self.col)), shape=(len_row,len_col) )
 		Ut, Sigma, Vt = sparsesvd(sparse_matrix, self.svd_dimension)

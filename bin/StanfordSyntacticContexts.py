@@ -38,6 +38,9 @@ class StanfordSyntacticContexts:
 				self.__extractRelations__()
 			self.misc.progress_bar(i, self.qty_documents, 100)
 
+	def __del__(self):
+		pass
+
 	def __extractRelations__(self):
 		i = 0
 

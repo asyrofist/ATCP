@@ -27,8 +27,10 @@ class StatisticalCorpus:
 		os.system('rm '+self.temp_folder+'Statistical_corpus.txt')
 		self.temp_file = self.misc.openFile(self.temp_folder+'Statistical_corpus.txt', 'a')
 
+	def __del__(self):
+		pass
+
 	def buildCorpus_pt(self):
-		print 'Building statistical corpus file at '+self.temp_folder+'...'
 		i = 0
 		for corpus_file in self.files:
 			i += 1
@@ -70,7 +72,6 @@ class StatisticalCorpus:
 		self.temp_file.close()
 
 	def buildCorpus_en(self):
-		print 'Building statistical corpus file at '+self.temp_folder+'...'
 		i = 0
 		for corpus_file in self.files:
 			i += 1
@@ -125,15 +126,17 @@ class StatisticalCorpus:
 				freq_tupla = part[2].split(' ')[0]
 				freq_term1 = part[2].split(' ')[1]
 				freq_term2 = part[2].split(' ')[2]
-				MUDAR A ORDEM DOS TERMOS -> COLOCAR MODIFIER#NOUN#FREQUENCY
-				if type1 == 'N' and type2 == 'N' and term1 != term2:
-					if term1 in list_seeds:				
+				
+				if type1 == 'N' and term1 != term2:
+					if dic_tuplas.has_key(term2+'#'+term1+'#'):
+						dic_tuplas[term2+'#'+term1+'#'] += int(freq_tupla)
+					else:
+						dic_tuplas[term2+'#'+term1+'#'] = int(freq_tupla)
+				if type2 == 'N' and term1 != term2:
+					if dic_tuplas.has_key(term1+'#'+term2+'#'):
+						dic_tuplas[term1+'#'+term2+'#'] += int(freq_tupla)
+					else:
 						dic_tuplas[term1+'#'+term2+'#'] = int(freq_tupla)
-					elif term2 in list_seeds:
-						if dic_tuplas.has_key(term2+'#'+term1+'#'):
-							dic_tuplas[term2+'#'+term1+'#'] += int(freq_tupla) 
-						else:
-							dic_tuplas[term2+'#'+term1+'#'] = int(freq_tupla)
 			else:
 				first_line = line
 		file_bigrams.close()
@@ -142,3 +145,4 @@ class StatisticalCorpus:
 		for tupla in dic_tuplas:
 			file_relations.write(tupla+''+str(dic_tuplas[tupla])+'\n')
 		file_relations.close()
+

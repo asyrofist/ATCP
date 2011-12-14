@@ -36,11 +36,6 @@ def main(type_atc, argv):
 		print '- Building statistical corpus at '+temp_folder
 
 	stat_corpus = StatisticalCorpus(input_folder, temp_folder, min_word_size, window_size)
-
-	if record_log:
-		logfile.writeLogfile('- Choosen "'+language+'" as the main language\n')
-	else:
-		print '- Choosen "'+language+'" as the main language'
 	
 	if language == 'pt':
 		stat_corpus.buildCorpus_pt()	
@@ -69,10 +64,12 @@ def main(type_atc, argv):
 	if sim_measure == 'mutual_information':
 		mi = MutualInformation(temp_folder, 'W'+window_size+'_Statistical_corpus.txt', seeds_file, mi_precision)
 		dic_terms = mi.getDicMI()
+		del mi
 	else:
 		stat_corpus.buildSTRelations('W'+window_size+'_Statistical_corpus.txt', seeds_file)
 		measures = Measures(temp_folder+'W'+window_size+'_Relations.txt', seeds_file)
 		dic_terms = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
+		del measures
 
 	del stat_corpus
 
@@ -83,7 +80,6 @@ def main(type_atc, argv):
 
 	thesaurus = Thesaurus(output_folder+'T'+window_size+'_'+type_atc+'_'+sim_measure+'.xml',max_qty_terms)
 	thesaurus.write(dic_terms)
-
 	del thesaurus
 
 	end = time.clock()

@@ -11,6 +11,9 @@ class Thesaurus:
 		misc = Miscelaneous()
 		self.thesaurus_file = misc.openFile(output_file, 'w')
 
+	def __del__(self):
+		pass
+
 	def write(self, dic_terms):
 		self.thesaurus_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<thesaurus>\n')
 		for seed in dic_terms:
@@ -22,9 +25,8 @@ class Thesaurus:
 					if not '.' in similarity: similarity += '.'
 					for i in range(len(similarity),18): similarity += '0'
 					term = index_related_term.keys()[0]
-					self.thesaurus_file.write('\t\t<related similarity="'+similarity+'">'+term+'</term>\n')
+					self.thesaurus_file.write('\t\t<related similarity="'+similarity+'">'+term+'</related>\n')
 					qty_terms += 1
 			self.thesaurus_file.write('\t</seed>\n')
 		self.thesaurus_file.write('</thesaurus>')
 		self.thesaurus_file.close()
-		print 'Thesaurus recorded in '+self.output_file

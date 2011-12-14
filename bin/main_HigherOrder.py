@@ -1,25 +1,38 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, os
+import sys, os, time, datetime
 
 from Parameters import Parameters
 from Measures import Measures
+from Miscelaneous import LogFile
 from Matrix import Matrix
 from Thesaurus import Thesaurus
 from StanfordSyntacticContexts import StanfordSyntacticContexts
 
 def main(type_atc, argv):
+	start = time.clock()
+	date_now = datetime.datetime.now()
+	date_now = date_now.strftime("%Y-%m-%d %H:%M:%S")
+
 	parameters = Parameters(type_atc, argv)
+	svd_dimension = int(parameters.getSvdDimension())
 	input_folder = parameters.getInputFolder()
 	language = parameters.getLanguage()
 	min_word_size = parameters.getMinWordSize()
 	max_qty_terms = int(parameters.getMaxQtyTerms())
 	output_folder = parameters.getOutputFolder()
 	temp_folder = parameters.getTempFolder()
+	record_log = parameters.getRecordLog()
 	seeds_file = parameters.getSeedsFile()
-	sim_measure = parameters.getSimilarityMeasure() 
-	svd_dimension = int(parameters.getSvdDimension())
+	sim_measure = parameters.getSimilarityMeasure()
+	del parameters
+ 
+	if record_log:
+		logfile = LogFile(str(date_now), svd_dimension, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+		logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
+	else:
+		print '- Building syntactics relations from '+input_folder
 
 	ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size)
 	ling_corpus.writeDic('AN')
@@ -27,11 +40,21 @@ def main(type_atc, argv):
 	ling_corpus.writeDic('VO')
 	del ling_corpus
 
+	if record_log:
+		logfile.writeLogfile('- Computing SVD to '+temp_folder+'AN_Matrix_SVD.txt\n')
+	else:
+		print '- Computing SVD to '+temp_folder+'AN_Matrix_SVD.txt'
+
 	matrix_an = Matrix(temp_folder, svd_dimension, 'AN')	
 	matrix_an.buildMatrixFromFile()
 	matrix_an.applySvd()
 	matrix_an.buildRelationsSvd()
 	del matrix_an
+
+	if record_log:
+		logfile.writeLogfile('- Computing SVD to '+temp_folder+'SV_Matrix_SVD.txt\n')
+	else:
+		print '- Computing SVD to '+temp_folder+'SV_Matrix_SVD.txt'
 
 	matrix_sv = Matrix(temp_folder, svd_dimension, 'SV')	
 	matrix_sv.buildMatrixFromFile()
@@ -39,20 +62,44 @@ def main(type_atc, argv):
 	matrix_sv.buildRelationsSvd()
 	del matrix_sv
 
+	if record_log:
+		logfile.writeLogfile('- Computing SVD to '+temp_folder+'VO_Matrix_SVD.txt\n')
+	else:
+		print '- Computing SVD to '+temp_folder+'VO_Matrix_SVD.txt'
+
 	matrix_vo = Matrix(temp_folder, svd_dimension, 'VO')	
 	matrix_vo.buildMatrixFromFile()
 	matrix_vo.applySvd()
 	matrix_vo.buildRelationsSvd()
 	del matrix_vo
 
-	print 'Merging terms to RelationsHigherOrder.txt'
+	if record_log:
+		logfile.writeLogfile('- Merging terms to '+temp_folder+'RelationsHigherOrder.txt\n')
+	else:
+		print '- Merging terms to '+temp_folder+'RelationsHigherOrder.txt'
+
 	command = "cat "+temp_folder+'AN_Relations_SVD.txt '+temp_folder+'SV_Relations_SVD.txt '+temp_folder+'VO_Relations_SVD.txt '+' > '+temp_folder+'RelationsHigherOrder.txt'
 	os.system(command)
 
 	measures = Measures(temp_folder+'RelationsHigherOrder.txt', seeds_file)
 	dic_topn = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
+	del measures
+
+	if record_log:
+		logfile.writeLogfile('- Building thesaurus in '+output_folder+'T_'+type_atc+'_'+sim_measure+'.xml \n')
+	else:
+		print '- Building thesaurus in '+output_folder+'T_'+type_atc+'_'+sim_measure+'.xml'
+
 	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'_'+sim_measure+'.xml',max_qty_terms)
 	thesaurus.write(dic_topn)
+
+	end = time.clock()
+	if record_log:
+		logfile.writeLogfile('- Thesaurus sucessfully built!\nTime consuming: '+str(end - start)+' seconds\n\n')
+	else:
+		print '- Thesaurus sucessfully built!'
+
+	del logfile
 
 if __name__ == "__main__":
    main('HigherOrder', sys.argv[1:])
