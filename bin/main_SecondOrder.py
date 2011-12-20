@@ -16,6 +16,7 @@ def main(type_atc, argv):
 	date_now = date_now.strftime("%Y-%m-%d %H:%M:%S")
 	
 	parameters = Parameters(type_atc, argv)
+	contexts = parameters.getContexts()
 	input_folder = parameters.getInputFolder()
 	language = parameters.getLanguage()
 	min_word_size = parameters.getMinWordSize()
@@ -23,28 +24,31 @@ def main(type_atc, argv):
 	output_folder = parameters.getOutputFolder()
 	temp_folder = parameters.getTempFolder()
 	record_log = parameters.getRecordLog()
+	record_intermediate = parameters.getRecordIntermediate()
 	seeds_file = parameters.getSeedsFile()
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
 
-	if record_log:
-		logfile = LogFile(str(date_now), None, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
-		logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
-	else:
-		print '- Building syntactics relations from '+input_folder
+	logfile = LogFile(str(date_now), None, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
-	ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size)
-	ling_corpus.writeDic('AN')
-	ling_corpus.writeDic('SV')
-	ling_corpus.writeDic('VO')
-	del ling_corpus
+	if not contexts:
+		if record_log:
+			logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
+		else:
+			print '- Building syntactics relations from '+input_folder
+
+		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size, record_intermediate)
+		del ling_corpus
 
 	if record_log:
 		logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt\n')
 	else:
 		print '- Merging terms to '+temp_folder+'Relations2ndOrder.txt'
 
-	command = "cat "+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'
+	if contexts or record_intermediate:
+		command = 'cat '+temp_folder+'AN/* '+temp_folder+'SV/* '+temp_folder+'VO/* > '+temp_folder+'Relations2ndOrder.txt'
+	else:
+		command = 'cat '+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'
 	os.system(command)
 
 	measures = Measures(temp_folder+'Relations2ndOrder.txt', seeds_file)

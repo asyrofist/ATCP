@@ -24,7 +24,8 @@ class StatisticalCorpus:
 		self.qty_documents = len(self.files)
 		self.misc = Miscelaneous()
 
-		os.system('rm '+self.temp_folder+'Statistical_corpus.txt')
+		if os.path.exists(self.temp_folder+'Statistical_corpus.txt'):
+			os.system('rm '+self.temp_folder+'Statistical_corpus.txt')
 		self.temp_file = self.misc.openFile(self.temp_folder+'Statistical_corpus.txt', 'a')
 
 	def __del__(self):

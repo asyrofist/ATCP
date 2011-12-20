@@ -16,6 +16,10 @@ class Parameters:
 		file_parameters = self.misc.openFile('../misc/parameters.cfg', 'r')
 
 		for line in file_parameters:
+			if re.match('contexts', line):
+				contexts = line.split('=')[1].replace('\n','')
+				if contexts == 'On': self.contexts = True
+				else: self.contexts = False
 			if re.match('language', line):
 				self.language = line.split('=')[1].replace('\n','')
 			if re.match('max_qty_terms', line):
@@ -34,12 +38,16 @@ class Parameters:
 				record_log = line.split('=')[1].replace('\n','')
 				if record_log == 'On': self.record_log = True
 				else: self.record_log = False
+			if re.match('record_intermediate', line):
+				record_intermediate = line.split('=')[1].replace('\n','')
+				if record_intermediate == 'On': self.record_intermediate = True
+				else: self.record_intermediate = False
 		file_parameters.close()
 
 		try:
 			opts, args = getopt.getopt(argv,\
-				"h:i:o:m:M:p:w:d:t:l:r:s:S:", \
-				["help", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "record_log=", "seeds=", "sim_measure="])
+				"h:c:i:o:m:M:p:w:d:t:l:r:R:s:S:", \
+				["help", "contexts=", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "record_log=", "record_intermediate=", "seeds=", "sim_measure="])
 		except getopt.GetoptError:
 			self.usage(type_atc)
 			sys.exit(2)
@@ -47,6 +55,9 @@ class Parameters:
 			if opt in ("-h", "--help"):
 				self.help()
 				sys.exit(0)
+			elif opt in ("-c", "--contexts"):
+				if arg == 'On': self.contexts = True
+				elif arg == 'Off': self.contexts = False
 			elif opt in ("-i", "--input"):
 				if os.path.isdir(arg): self.input_folder = arg 
 				else: print bcolors.WARNING+'WARNING: '+str(arg)+' is not a folder, setting '+self.input_folder+' as input folder'+bcolors.ENDC
@@ -66,6 +77,9 @@ class Parameters:
 			elif opt in ("-r", "--record_log"):
 				if arg == 'On': self.record_log = True
 				elif arg == 'Off': self.record_log = False
+			elif opt in ("-R", "--record_intermediate"):
+				if arg == 'On': self.record_intermediate = True
+				elif arg == 'Off': self.record_intermediate = False
 				else: print bcolors.WARNING+'WARNING: "'+str(arg)+'" is not a supported option to log recording, setting to "'+record_log+'" as default option'+bcolors.ENDC 
 			elif opt in ("-s", "--seeds"):
 				if os.path.isfile(arg): self.seeds_file = arg 
@@ -100,6 +114,9 @@ class Parameters:
 	def __del__(self):
 		pass
 
+	def getContexts(self):
+		return self.contexts
+
 	def getInputFolder(self):
 		return self.input_folder
 
@@ -121,6 +138,9 @@ class Parameters:
 	def getRecordLog(self):
 		return self.record_log
 
+	def getRecordIntermediate(self):
+		return self.record_intermediate
+
 	def getSeedsFile(self):
 		return self.seeds_file
 
@@ -140,6 +160,7 @@ class Parameters:
 		if type_atc == 'FirstOrder':
 			usage = """
    Usage: python main_FirstOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
+   -c  --contexts=            Input folder containing the sybtactic context files
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
    -m  --min_size=            Minimum size of a word to be computed
@@ -147,6 +168,7 @@ class Parameters:
    -o  --output=              Output folder to receive the data
    -p  --mi_precision=        Precision of the Mutual Information result
    -r  --record_log=          Enable/Disable log file recording
+   -R  --record_intermediate= Enable/Disable intermediate files recording
    -s  --seeds=               File containing seeds to the thesaurus
 	-S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -w  --window_size=         Size of the window to compute the correlation analysis
@@ -156,6 +178,7 @@ class Parameters:
 		elif type_atc == 'HigherOrder':
 			usage = """
    Usage: python main_HigherOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
+   -c  --contexts=            Input folder containing the sybtactic context files
    -d  --svd_dimension=       Number of dimensions to reduce the SVD
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
@@ -163,6 +186,7 @@ class Parameters:
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
    -r  --record_log=          Enable/Disable log file recording
+   -R  --record_intermediate= Enable/Disable intermediate files recording
    -s  --seeds=               File containing seeds to the thesaurus
    -S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -t  --temp=                Temp folder to receive temporary data
@@ -171,12 +195,14 @@ class Parameters:
 		else:
 			usage = """
    Usage: python main_SecondOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
+   -c  --contexts=            Input folder containing the sybtactic context files
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
    -m  --min_size=            Minimum size of a word to be computed
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
    -r  --record_log=          Enable/Disable log file recording
+   -R  --record_intermediate= Enable/Disable intermediate files recording
    -s  --seeds=               File containing seeds to the thesaurus
    -S  --sim_measure=         Metric to compute the similarity between seed and related terms
    -t  --temp=                Temp folder to receive temporary data
@@ -190,34 +216,40 @@ class Parameters:
    -----------------------------------------------------------------------------------------------\n
    [COMMAND] $python ['main' program].py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
    [OPTION] [FOLDER] ... [OPTION] [PARAMETER]
-   -d  --svd_dimension= Number of dimensions to reduce the SVD [Used only in main_HigherOrder.py]\n
-   -i  --input=         Input folder containing the corpus
-                        Default folder: '../Data/Corpus/'\n
-   -l  --language=      Language of the corpus data
-                        Default language: 'en'
-                        Supported languages: 'en' [English] and 'pt' [Portuguese]\n
-   -m  --min_size=      Minimum size of a word to be computed
-                        Default size: '3' letters\n
-   -M  --max_terms=     Max number of similar terms recorded in the XML file
-                        Default max: '10' related terms\n
-   -o  --output=        Output folder to receive the data
-                        Default output: '../Data/Output/'\n
-   -p  --mi_precision=  Precision of the Mutual Information result [Used only in main_FirstOrder.py with --sim_measure=mi_information]
-                        Default precision: 10\n
-   -r  --record_log=    Enable/Disable log file recording
-                        Default option: 'Off' [Log file is recorded in ../misc/application.log]
-                        Supported options: 'On' and 'Off'
-   -s  --seeds=         File containing seeds to the thesaurus
-                        Default file: '../misc/seeds.txt'\n
-   -S  --sim_measure=   Metric to compute the similarity between seed and related terms
-                        Default measure: 'jaccardmax'
-                        Supported measures: 'mutual_information', 'baseline', 'dicebin'
-                                            'dicemin', 'jaccard', 'cosinebin', 'cosine'
-                                            'city', 'euclidean', 'js', 'lin', 'jaccardmax'\n
-   -w  --window_size=   Size of the window to compute the correlation analysis [Used only in main_FirstOrder.py]
-                        Default size: '20'\n
-   -t  --temp=          Temp folder to receive temporary data
-                        Default folder: '../Data/Temp/'\n
-   -h  --help           Display this help and exit\n
+   -c  --contexts=            Input folder containing the sybtactic context files
+                              Default option: 'Off' [The system loads the corpus folder]
+                              Supported options: 'On' and 'Off'
+   -d  --svd_dimension=       Number of dimensions to reduce the SVD [Used only in main_HigherOrder.py]\n
+   -i  --input=               Input folder containing the corpus
+                              Default folder: '../Data/Corpus/'\n
+   -l  --language=            Language of the corpus data
+                              Default language: 'en'
+                              Supported languages: 'en' [English] and 'pt' [Portuguese]\n
+   -m  --min_size=            Minimum size of a word to be computed
+                              Default size: '3' letters\n
+   -M  --max_terms=           Max number of similar terms recorded in the XML file
+                              Default max: '10' related terms\n
+   -o  --output=              Output folder to receive the data
+                              Default output: '../Data/Output/'\n
+   -p  --mi_precision=        Precision of the Mutual Information result [Used only in main_FirstOrder.py with --sim_measure=mi_information]
+                              Default precision: 10\n
+   -r  --record_log=          Enable/Disable log file recording
+                              Default option: 'Off' [Log file is recorded in ../misc/application.log]
+                              Supported options: 'On' and 'Off'
+   -R  --record_intermediate= Enable/Disable intermediate files recording
+                              Default option: 'Off'
+                              Supported options: 'On' and 'Off' [Intermediate files are recorded in '../Temp/AN/', '../Temp/SV/', and '../Temp/VO/']
+   -s  --seeds=               File containing seeds to the thesaurus
+                              Default file: '../misc/seeds.txt'\n
+   -S  --sim_measure=         Metric to compute the similarity between seed and related terms
+                              Default measure: 'jaccardmax'
+                              Supported measures: 'mutual_information', 'baseline', 'dicebin'
+                                                  'dicemin', 'jaccard', 'cosinebin', 'cosine'
+                                                  'city', 'euclidean', 'js', 'lin', 'jaccardmax'\n
+   -w  --window_size=         Size of the window to compute the correlation analysis [Used only in main_FirstOrder.py]
+                              Default size: '20'\n
+   -t  --temp=                Temp folder to receive temporary data
+                              Default folder: '../Data/Temp/'\n
+   -h  --help                 Display this help and exit\n
    """
 		print help

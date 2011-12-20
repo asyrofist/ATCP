@@ -9,7 +9,7 @@ from Miscelaneous import bcolors
 
 class StanfordSyntacticContexts:
 
-	def __init__(self, input_folder, temp_folder, min_word_size):	
+	def __init__(self, input_folder, temp_folder, min_word_size, record_intermediate):	
 		try:
 			self.root, self.dirs, self.files = os.walk(input_folder).next()[:3]
 		except IOError:
@@ -36,7 +36,19 @@ class StanfordSyntacticContexts:
 				self.dic_t = xml.getDicTerms()
 				self.dic_nt = xml.getDicNonTerminals()
 				self.__extractRelations__()
+				if record_intermediate:
+					self.__writeDicRelations__(corpus_filename)
+					self.dic_t = {}
+					self.dic_nt = {}
+					self.dic_an = {}
+					self.dic_sv = {}
+					self.dic_vo = {}
 			self.misc.progress_bar(i, self.qty_documents, 100)
+
+		if not record_intermediate:
+			self.__writeDic__('AN')
+			self.__writeDic__('SV')
+			self.__writeDic__('VO')
 
 	def __del__(self):
 		pass
@@ -114,6 +126,29 @@ class StanfordSyntacticContexts:
 		else:
 			self.dic_vo[relation] = 1
 
+	def __writeDicRelations__(self, corpus_filename):
+		file_relation_an = self.misc.openFile(self.temp_folder+'AN/AN_'+corpus_filename+'.txt', 'w')
+		for id_relation in self.dic_an:
+			file_relation_an.write(id_relation+'#'+str(self.dic_an[id_relation])+'\n')
+		file_relation_an.close()
+
+		file_relation_sv = self.misc.openFile(self.temp_folder+'SV/SV_'+corpus_filename+'.txt', 'w')
+		for id_relation in self.dic_sv:
+			file_relation_sv.write(id_relation+'#'+str(self.dic_sv[id_relation])+'\n')
+		file_relation_sv.close()
+
+		file_relation_vo = self.misc.openFile(self.temp_folder+'VO/VO_'+corpus_filename+'.txt', 'w')
+		for id_relation in self.dic_vo:
+			file_relation_vo.write(id_relation+'#'+str(self.dic_vo[id_relation])+'\n')
+		file_relation_vo.close()
+
+	def __writeDic__(self, type_relation):
+		file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
+		dic_relation = self.getDic(type_relation)
+		for id_relation in dic_relation:
+			file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')
+		file_relation.close()
+
 	""" Get and Print methods """
 
 	def getDic(self, type_relation):
@@ -125,11 +160,3 @@ class StanfordSyntacticContexts:
 		dic_relation = getDic(type_relation)
 		for id_relation in self.dic_relation:
 			print id_relation+' = '+str(self.dic_relation[id_relation])
-
-	def writeDic (self, type_relation):
-		misc = Miscelaneous()
-		file_relation = misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
-		dic_relation = self.getDic(type_relation)
-		for id_relation in dic_relation:
-			file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')
-		file_relation.close()

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, os, time, datetime
+import sys, os, time, datetime, os.path
 
 from StatisticalCorpus import StatisticalCorpus
 from Parameters import Parameters
@@ -16,6 +16,7 @@ def main(type_atc, argv):
 	date_now = date_now.strftime("%Y-%m-%d %H:%M:%S")
 
 	parameters = Parameters(type_atc, argv)
+	contexts = parameters.getContexts()
 	input_folder = parameters.getInputFolder()
 	language = parameters.getLanguage()
 	min_word_size = int(parameters.getMinWordSize())
@@ -25,48 +26,55 @@ def main(type_atc, argv):
 	window_size = parameters.getWindowSize()
 	temp_folder = parameters.getTempFolder()
 	record_log = parameters.getRecordLog()
+	record_intermediate = parameters.getRecordIntermediate()
 	seeds_file = parameters.getSeedsFile()
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
  
-	if record_log:
-		logfile = LogFile(str(date_now), None, input_folder, language, min_word_size, max_qty_terms, mi_precision, output_folder, window_size, temp_folder, seeds_file, sim_measure)
-		logfile.writeLogfile('- Building statistical corpus at '+temp_folder+'\n')
-	else:
-		print '- Building statistical corpus at '+temp_folder
-
+	logfile = LogFile(str(date_now), None, input_folder, language, min_word_size, max_qty_terms, mi_precision, output_folder, window_size, temp_folder, seeds_file, sim_measure)
 	stat_corpus = StatisticalCorpus(input_folder, temp_folder, min_word_size, window_size)
+
+	if not contexts:
+		if record_log:
+			logfile.writeLogfile('- Building statistical corpus at '+temp_folder+'\n')
+		else:
+			print '- Building statistical corpus at '+temp_folder
 	
-	if language == 'pt':
-		stat_corpus.buildCorpus_pt()	
-		param_nsp = '--token ../misc/tokens_nsp.pl'
-	elif language == 'en':
-		stat_corpus.buildCorpus_en()
-		param_nsp = ''
+		if language == 'pt':
+			stat_corpus.buildCorpus_pt()	
+			param_nsp = '--token ../misc/tokens_nsp.pl'
+		elif language == 'en':
+			stat_corpus.buildCorpus_en()
+			param_nsp = ''
 
-	"""
-		Uses count.pl from NGram Statistical Package (NSP) to get Bigrams in a window
-	"""
+		"""
+			Uses count.pl from NGram Statistical Package (NSP) to get Bigrams in a window
+		"""
 
-	if record_log:
-		logfile.writeLogfile('- Getting bigrams to W'+window_size+'_Statistical_corpus.txt \n')
+		if record_log:
+			logfile.writeLogfile('- Getting bigrams to W'+window_size+'_Statistical_corpus.txt \n')
+		else:
+			print '- Getting bigrams to W'+window_size+'_Statistical_corpus.txt'
+
+		command = 'count.pl --ngram 2 '+param_nsp+' --window '+window_size+' '+temp_folder+'W'+window_size+'_Statistical_corpus.txt '+temp_folder+'Statistical_corpus.txt'
+		os.system(command)
+
+		if record_log:
+			logfile.writeLogfile('- Using '+sim_measure+' as similarity measure \n')
+		else:
+			print '- Using '+sim_measure+' as similarity measure'
+
+		if sim_measure == 'mutual_information':
+			mi = MutualInformation(temp_folder, 'W'+window_size+'_Statistical_corpus.txt', seeds_file, mi_precision)
+			dic_terms = mi.getDicMI()
+			del mi
+		else:
+			stat_corpus.buildSTRelations('W'+window_size+'_Statistical_corpus.txt', seeds_file)
+			measures = Measures(temp_folder+'W'+window_size+'_Relations.txt', seeds_file)
+			dic_terms = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
+			del measures
+
 	else:
-		print '- Getting bigrams to W'+window_size+'_Statistical_corpus.txt'
-
-	command = 'count.pl --ngram 2 '+param_nsp+' --window '+window_size+' '+temp_folder+'W'+window_size+'_Statistical_corpus.txt '+temp_folder+'Statistical_corpus.txt'
-	os.system(command)
-
-	if record_log:
-		logfile.writeLogfile('- Using '+sim_measure+' as similarity measure \n')
-	else:
-		print '- Using '+sim_measure+' as similarity measure'
-
-	if sim_measure == 'mutual_information':
-		mi = MutualInformation(temp_folder, 'W'+window_size+'_Statistical_corpus.txt', seeds_file, mi_precision)
-		dic_terms = mi.getDicMI()
-		del mi
-	else:
-		stat_corpus.buildSTRelations('W'+window_size+'_Statistical_corpus.txt', seeds_file)
 		measures = Measures(temp_folder+'W'+window_size+'_Relations.txt', seeds_file)
 		dic_terms = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
 		del measures

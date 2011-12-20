@@ -16,6 +16,7 @@ def main(type_atc, argv):
 	date_now = date_now.strftime("%Y-%m-%d %H:%M:%S")
 
 	parameters = Parameters(type_atc, argv)
+	contexts = parameters.getContexts()
 	svd_dimension = int(parameters.getSvdDimension())
 	input_folder = parameters.getInputFolder()
 	language = parameters.getLanguage()
@@ -24,21 +25,34 @@ def main(type_atc, argv):
 	output_folder = parameters.getOutputFolder()
 	temp_folder = parameters.getTempFolder()
 	record_log = parameters.getRecordLog()
+	record_intermediate = parameters.getRecordIntermediate()
 	seeds_file = parameters.getSeedsFile()
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
- 
-	if record_log:
-		logfile = LogFile(str(date_now), svd_dimension, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
-		logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
-	else:
-		print '- Building syntactics relations from '+input_folder
 
-	ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size)
-	ling_corpus.writeDic('AN')
-	ling_corpus.writeDic('SV')
-	ling_corpus.writeDic('VO')
-	del ling_corpus
+	logfile = LogFile(str(date_now), svd_dimension, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+
+	if not contexts:
+		if record_log:
+			logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
+		else:
+			print '- Building syntactics relations from '+input_folder
+
+		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size, record_intermediate)
+		del ling_corpus
+
+	if record_log:
+		logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt\n')
+	else:
+		print '- Merging terms to '+temp_folder+'Relations2ndOrder.txt'
+
+	if contexts or record_intermediate:
+		command = 'cat '+temp_folder+'AN/* > '+temp_folder+'AN_Relations.txt'
+		os.system(command)
+		command = 'cat '+temp_folder+'SV/* > '+temp_folder+'SV_Relations.txt'
+		os.system(command)
+		command = 'cat '+temp_folder+'VO/* > '+temp_folder+'VO_Relations.txt'
+		os.system(command)
 
 	if record_log:
 		logfile.writeLogfile('- Computing SVD to '+temp_folder+'AN_Matrix_SVD.txt\n')
