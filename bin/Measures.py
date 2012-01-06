@@ -208,11 +208,11 @@ class Measures:
 
 	def __sortTopNFromAllDic__(self, dic, n):
 		dic_terms = OrderedDict()
-		dic_related = {}
-		
+	
 		for seed in self.list_seeds:
 			if self.__existKeyInDic__(seed, dic):
 				dic_terms[seed] = {'terms': []}
+				dic_related = {}
 				for related_term in dic[seed]:
 					dic_related[related_term] = dic[seed][related_term]
 				if n == 0: n = None
