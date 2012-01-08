@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, os, time, datetime
+import sys, os, datetime
 
 from Parameters import Parameters
 from Seeds import Seeds
@@ -11,9 +11,8 @@ from StanfordSyntacticContexts import StanfordSyntacticContexts
 from Miscelaneous import LogFile
 
 def main(type_atc, argv):
-	start = time.clock()
-	date_now = datetime.datetime.now()
-	date_now = date_now.strftime("%Y-%m-%d %H:%M:%S")
+	date_start = datetime.datetime.now()
+	date_start = date_start.strftime("%Y-%m-%d %H:%M:%S")
 	
 	parameters = Parameters(type_atc, argv)
 	contexts = parameters.getContexts()
@@ -29,21 +28,15 @@ def main(type_atc, argv):
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
 
-	logfile = LogFile(str(date_now), None, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+	logfile = LogFile(record_log, str(date_start), None, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
 	if not contexts:
-		if record_log:
-			logfile.writeLogfile('- Building syntactics relations from '+input_folder+'\n')
-		else:
-			print '- Building syntactics relations from '+input_folder
+		logfile.writeLogfile('- Building syntactics relations from '+input_folder)
 
 		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size, record_intermediate)
 		del ling_corpus
 
-	if record_log:
-		logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt\n')
-	else:
-		print '- Merging terms to '+temp_folder+'Relations2ndOrder.txt'
+	logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt')
 
 	if contexts or record_intermediate:
 		command = 'cat '+temp_folder+'AN/* '+temp_folder+'SV/* '+temp_folder+'VO/* > '+temp_folder+'Relations2ndOrder.txt'
@@ -55,21 +48,15 @@ def main(type_atc, argv):
 	dic_topn = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
 	del measures
 
-	if record_log:
-		logfile.writeLogfile('- Building thesaurus in '+output_folder+'T_'+type_atc+'_'+sim_measure+'.xml \n')
-	else:
-		print '- Building thesaurus in '+output_folder+'T_'+type_atc+'_'+sim_measure+'.xml'
+	logfile.writeLogfile('- Building thesaurus in '+output_folder+'T_'+type_atc+'_'+sim_measure+'.xml')
 
 	thesaurus = Thesaurus(output_folder+'T_'+type_atc+'_'+sim_measure+'.xml',max_qty_terms)
 	thesaurus.write(dic_topn)
 	del thesaurus
 
-	end = time.clock()
-	if record_log:
-		logfile.writeLogfile('- Thesaurus sucessfully built!\nTime consuming: '+str(end - start)+' seconds\n\n')
-	else:
-		print '- Thesaurus sucessfully built!'
-
+	date_end = datetime.datetime.now()
+	date_end = date_end.strftime("%Y-%m-%d %H:%M:%S")
+	logfile.writeLogfile('- Thesaurus sucessfully built!\nEnding process at: '+str(date_end)+'.\n')
 	del logfile
 
 if __name__ == "__main__":
