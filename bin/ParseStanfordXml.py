@@ -6,7 +6,7 @@ from Miscelaneous import bcolors
 from Miscelaneous import Miscelaneous
 from collections import defaultdict
 
-class ParseXmlStanford:
+class ParseStanfordXml:
 
 	def __init__(self, filename):
 		self.dic_t = {}

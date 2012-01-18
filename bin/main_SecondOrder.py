@@ -25,15 +25,15 @@ def main(type_atc, argv):
 	record_log = parameters.getRecordLog()
 	record_intermediate = parameters.getRecordIntermediate()
 	seeds_file = parameters.getSeedsFile()
+	stoplist_file = parameters.getStoplistFile()
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
 
-	logfile = LogFile(record_log, str(date_start), None, input_folder, language, None, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+	logfile = LogFile(record_log, str(date_start), None, input_folder, language, stoplist_file, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
 	if not contexts:
 		logfile.writeLogfile('- Building syntactics relations from '+input_folder)
-
-		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size, record_intermediate)
+		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, stoplist_file, min_word_size, record_intermediate)
 		del ling_corpus
 
 	logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt')

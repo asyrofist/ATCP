@@ -3,13 +3,14 @@
 
 import re, os, sys
 
+from collections import defaultdict
 from ParseStanfordXml import ParseStanfordXml
 from Miscelaneous import Miscelaneous
 from Miscelaneous import bcolors
 
 class StanfordSyntacticContexts:
 
-	def __init__(self, input_folder, temp_folder, min_word_size, record_intermediate):	
+	def __init__(self, input_folder, temp_folder, stoplist_file, min_word_size, record_intermediate):	
 		try:
 			self.root, self.dirs, self.files = os.walk(input_folder).next()[:3]
 		except IOError:
@@ -20,6 +21,7 @@ class StanfordSyntacticContexts:
 		self.temp_folder = temp_folder
 		self.qty_documents = len(self.files)
 		self.misc = Miscelaneous()
+		self.stoplist = self.misc.getStoplist(stoplist_file)
 
 		self.dic_t = {}
 		self.dic_nt = {}
@@ -29,6 +31,7 @@ class StanfordSyntacticContexts:
 
 		i = 0
 		for corpus_file in self.files:
+			print corpus_file
 			i += 1
 			if re.match('.*xml$', corpus_file):
 				corpus_filename = corpus_file.split('.')[0]
@@ -43,7 +46,7 @@ class StanfordSyntacticContexts:
 					self.dic_an = {}
 					self.dic_sv = {}
 					self.dic_vo = {}
-			self.misc.progress_bar(i, self.qty_documents, 100)
+			#self.misc.progress_bar(i, self.qty_documents, 100)
 
 		if not record_intermediate:
 			self.__writeDic__('AN')
@@ -55,11 +58,11 @@ class StanfordSyntacticContexts:
 
 	def __extractRelations__(self):
 		i = 0
-
+		#print self.dic_t
 		for id_nt in self.dic_nt:
 			if self.dic_nt[id_nt]['cat'] == 'nn':
-				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
+				noun = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
+				#noun = re.sub('-', '_', noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
@@ -67,46 +70,42 @@ class StanfordSyntacticContexts:
 					self.__addElementDicAN__(noun+'#'+context)
 
 			elif self.dic_nt[id_nt]['cat'] == 'amod':
-				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
+				noun = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
+				#noun = re.sub('-', '_', noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
-				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
-					self.__addElementDicSV__(context+'#'+noun)
-
-			elif self.dic_nt[id_nt]['cat'] == 'prep_for':
-				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
+				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size and context not in self.stoplist:
+					self.__addElementDicAN__(context+'#'+noun)
+				
+			if re.match('prep_', self.dic_nt[id_nt]['cat']) \
+				and re.match('^NN', self.dic_t[self.dic_nt[id_nt]['dep']]['pos'])  \
+				and re.match('^NN', self.dic_t[self.dic_nt[id_nt]['gov']]['pos']):
+				noun = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
+				#noun = re.sub('-', '_', noun)
 				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
 				context = re.sub('-', '_', context)
+				prep = self.dic_nt[id_nt]['cat'].split('_')[1]
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
-					self.__addElementDicAN__('for_'+context+'#'+noun)
-					self.__addElementDicAN__('for_'+noun+'#'+context)
+					self.__addElementDicAN__(prep+'_'+context+'#'+noun)
+					self.__addElementDicAN__(prep+'_'+noun+'#'+context)
 
-			elif self.dic_nt[id_nt]['cat'] == 'prep_of':
-				noun = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
-				context = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
-				context = re.sub('-', '_', context)
-				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
-					self.__addElementDicAN__('of_'+context+'#'+noun)
-					self.__addElementDicAN__('of_'+noun+'#'+context)
-
-			elif re.match('^(nsubjpass|nsubj|xsubj|agent)$', self.dic_nt[id_nt]['cat']):
-				noun = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
-				context = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				context = re.sub('-', '_', context)
-				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
-					self.__addElementDicSV__(context+'#'+noun)
+			elif re.match('^(nsubjpass|nsubj|xsubj|agent)$', self.dic_nt[id_nt]['cat']): #gov = verb
+				if re.match('V', self.dic_t[self.dic_nt[id_nt]['gov']]['pos']):
+					verb = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
+					#verb = re.sub('-', '_', verb)
+					contexts = self.dic_t[self.dic_nt[id_nt]['dep']]['nps']
+					for context in contexts:
+						if len(verb) >= self.min_word_size and len(context) >= self.min_word_size:
+							self.__addElementDicSV__('sub_'+verb+'#'+context)
 			
 			elif re.match('^(dobj|iobj)$', self.dic_nt[id_nt]['cat']):
-				noun = self.dic_t[self.dic_nt[id_nt]['dep']]['lemma'].lower()
-				noun = re.sub('-', '_', noun)
-				context = self.dic_t[self.dic_nt[id_nt]['head']]['lemma'].lower()
-				context = re.sub('-', '_', context)
-				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
-					self.__addElementDicVO__(context+'#'+noun)
+				if re.match('V', self.dic_t[self.dic_nt[id_nt]['gov']]['pos']):
+					verb = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
+					#verb = re.sub('-', '_', verb)
+					contexts = self.dic_t[self.dic_nt[id_nt]['dep']]['nps']
+					for context in contexts:
+						if len(verb) >= self.min_word_size and len(context) >= self.min_word_size:
+							self.__addElementDicVO__('obj_'+verb+'#'+context)
 
 	def __addElementDicAN__(self, relation):
 		if self.dic_an.has_key(relation):
@@ -160,3 +159,6 @@ class StanfordSyntacticContexts:
 		dic_relation = getDic(type_relation)
 		for id_relation in self.dic_relation:
 			print id_relation+' = '+str(self.dic_relation[id_relation])
+
+#if __name__ == '__main__':
+#	ps = StanfordSyntacticContexts('/home/roger/Desktop/exe1/', '/home/roger/Desktop/exe2/', 3, False)
