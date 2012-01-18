@@ -30,7 +30,7 @@ def main(type_atc, argv):
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
  
-	logfile = LogFile(record_log, str(date_start), None, input_folder, language, min_word_size, max_qty_terms, mi_precision, output_folder, window_size, temp_folder, seeds_file, sim_measure)
+	logfile = LogFile(record_log, str(date_start), None, input_folder, language, None, min_word_size, max_qty_terms, mi_precision, output_folder, window_size, temp_folder, seeds_file, sim_measure)
 	stat_corpus = StatisticalCorpus(input_folder, temp_folder, min_word_size, window_size)
 
 	if not contexts:
