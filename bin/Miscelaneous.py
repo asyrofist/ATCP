@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, codecs
+import sys, codecs, re
 
 class Miscelaneous:
 	def __init__(self):
@@ -9,6 +9,14 @@ class Miscelaneous:
 
 	def __del__(self):
 		pass
+
+	def getStoplist(self, stopfile):
+		stoplist = []
+		file_stoplist = self.openFile(stopfile, 'r')
+		for line in file_stoplist:
+			line = re.sub('\n', '', line)
+			stoplist.append(line)
+		return stoplist
 
 	def progress_bar(self, value, max, barsize):
 		chars = int(value * barsize / float(max))
@@ -31,7 +39,7 @@ class Miscelaneous:
 
 
 class LogFile:
-	def __init__(self, record_log, dt_now, d, i, l, m, M, p, o, w, t, s, S):
+	def __init__(self, record_log, dt_now, d, i, l, L, m, M, p, o, w, t, s, S):
 		self.record_log = record_log
 		if self.record_log:
 			misc = Miscelaneous()
@@ -48,6 +56,7 @@ class LogFile:
 			self.logfile.write('Window_size   : '+str(w)+'\n')
 			self.logfile.write('Temp_folder   : '+t+'\n')
 			self.logfile.write('Seeds_file    : '+s+'\n')
+			self.logfile.write('Stoplist_file : '+L+'\n')
 			self.logfile.write('Sim_measure   : '+S+'\n')
 			self.logfile.write('---------------------------------------------------------------------------------\n')
 		else:
@@ -63,6 +72,7 @@ class LogFile:
 			print 'Window_size   : '+str(w)
 			print 'Temp_folder   : '+t
 			print 'Seeds_file    : '+s
+			print 'Stoplist_file : '+L
 			print 'Sim_measure   : '+S
 			print '---------------------------------------------------------------------------------'
 
