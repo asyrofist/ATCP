@@ -12,6 +12,7 @@ class Parameters:
 		self.output_folder = '../Data/Output/'
 		self.temp_folder = '../Data/Temp/'
 		self.seeds_file = '../misc/seeds.txt'
+		self.stoplist_file = '../misc/stoplist.txt'
 		self.misc = Miscelaneous()
 		file_parameters = self.misc.openFile('../misc/parameters.cfg', 'r')
 
@@ -46,8 +47,8 @@ class Parameters:
 
 		try:
 			opts, args = getopt.getopt(argv,\
-				"h:c:i:o:m:M:p:w:d:t:l:r:R:s:S:", \
-				["help", "contexts=", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "record_log=", "record_intermediate=", "seeds=", "sim_measure="])
+				"h:c:i:o:m:M:p:w:d:t:l:L:r:R:s:S:", \
+				["help", "contexts=", "input=", "output=", "min_size=", "max_terms=", "mi_precision=", "window_size=", "svd_dimension=", "temp=", "language=", "record_log=", "record_intermediate=", "seeds=", "sim_measure=", "stoplist="])
 		except getopt.GetoptError:
 			self.usage(type_atc)
 			sys.exit(2)
@@ -99,7 +100,10 @@ class Parameters:
 					or arg == 'jaccardmax': 
 					self.sim_measure = arg
 				else: 
-					print bcolors.WARNING+'WARNING: "'+str(arg)+'" is not a supported similarity measure, setting to "'+self.sim_measure+'" as default similarity measure. 						\nSimilarity measures supported by the system:\n - mutual_information [used only in First Order construction]\n - baseline\n - dicebin\n - dicemin\n - jaccard\n - cosinebin\n - cosine\n - city\n - euclidean\n - js\n - lin\n - jaccardmax'+bcolors.ENDC 
+					print bcolors.WARNING+'WARNING: "'+str(arg)+'" is not a supported similarity measure, setting to "'+self.sim_measure+'" as default similarity measure. 						\nSimilarity measures supported by the system:\n - mutual_information [used only in First Order construction]\n - baseline\n - dicebin\n - dicemin\n - jaccard\n - cosinebin\n - cosine\n - city\n - euclidean\n - js\n - lin\n - jaccardmax'+bcolors.ENDC
+			elif opt in ("-L", "--stoplist"):
+				if os.path.isfile(arg): self.stoplist_file = arg 
+				else: print bcolors.WARNING+'WARNING: '+str(arg)+' is not a file, setting '+self.seeds+' as stoplist file'+bcolors.ENDC
 
 			if type_atc == 'FirstOrder':
 				if opt in ("-p", "--mi_precision"):
@@ -147,6 +151,9 @@ class Parameters:
 	def getSimilarityMeasure(self):
 		return self.sim_measure
 
+	def getStoplistFile(self):
+		return self.stoplist_file
+
 	def getSvdDimension(self):
 		return self.svd_dimension
 
@@ -160,9 +167,10 @@ class Parameters:
 		if type_atc == 'FirstOrder':
 			usage = """
    Usage: python main_FirstOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
-   -c  --contexts=            Input folder containing the sybtactic context files
+   -c  --contexts=            Input folder containing the syntactic context files
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
+   -L  --stoplist=            File containing a list of stopwords
    -m  --min_size=            Minimum size of a word to be computed
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the data
@@ -178,10 +186,11 @@ class Parameters:
 		elif type_atc == 'HigherOrder':
 			usage = """
    Usage: python main_HigherOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
-   -c  --contexts=            Input folder containing the sybtactic context files
+   -c  --contexts=            Input folder containing the syntactic context files
    -d  --svd_dimension=       Number of dimensions to reduce the SVD
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
+   -L  --stoplist=            File containing a list of stopwords
    -m  --min_size=            Minimum size of a word to be computed
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
@@ -195,9 +204,10 @@ class Parameters:
 		else:
 			usage = """
    Usage: python main_SecondOrder.py [OPTION] [FOLDER]... [OPTION] [PARAMETER]...\n
-   -c  --contexts=            Input folder containing the sybtactic context files
+   -c  --contexts=            Input folder containing the syntactic context files
    -i  --input=               Input folder containing the corpus
    -l  --language=            Language of the corpus data
+   -L  --stoplist=            File containing a list of stopwords
    -m  --min_size=            Minimum size of a word to be computed
    -M  --max_terms=           Max number of similar terms recorded in the XML file
    -o  --output=              Output folder to receive the corpus
@@ -225,6 +235,8 @@ class Parameters:
    -l  --language=            Language of the corpus data
                               Default language: 'en'
                               Supported languages: 'en' [English] and 'pt' [Portuguese]\n
+   -L  --stoplist=            File containing a list of stopwords
+                              Default file: '../misc/stoplist.txt'\n
    -m  --min_size=            Minimum size of a word to be computed
                               Default size: '3' letters\n
    -M  --max_terms=           Max number of similar terms recorded in the XML file
