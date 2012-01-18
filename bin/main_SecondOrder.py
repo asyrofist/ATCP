@@ -28,7 +28,7 @@ def main(type_atc, argv):
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
 
-	logfile = LogFile(record_log, str(date_start), None, input_folder, language, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+	logfile = LogFile(record_log, str(date_start), None, input_folder, language, None, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
 	if not contexts:
 		logfile.writeLogfile('- Building syntactics relations from '+input_folder)
