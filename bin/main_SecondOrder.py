@@ -4,11 +4,11 @@
 import sys, os, datetime
 
 from Parameters import Parameters
-from Seeds import Seeds
 from Measures import Measures
-from Thesaurus import Thesaurus
-from StanfordSyntacticContexts import StanfordSyntacticContexts
 from Miscelaneous import LogFile
+from Thesaurus import Thesaurus
+from Contexts import Contexts
+from StanfordSyntacticContexts import StanfordSyntacticContexts
 
 def main(type_atc, argv):
 	date_start = datetime.datetime.now()
@@ -31,17 +31,18 @@ def main(type_atc, argv):
 
 	logfile = LogFile(record_log, str(date_start), None, input_folder, language, stoplist_file, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
-	if not contexts:
+	if contexts:
+		logfile.writeLogfile('- Building syntactics relations from '+temp_folder)
+		contexts = Contexts(temp_folder)
+		del contexts
+	else:
 		logfile.writeLogfile('- Building syntactics relations from '+input_folder)
 		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, stoplist_file, min_word_size, record_intermediate)
 		del ling_corpus
 
 	logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt')
 
-	if contexts or record_intermediate:
-		command = 'cat '+temp_folder+'AN/* '+temp_folder+'SV/* '+temp_folder+'VO/* > '+temp_folder+'Relations2ndOrder.txt'
-	else:
-		command = 'cat '+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'
+	command = 'cat '+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'
 	os.system(command)
 
 	measures = Measures(temp_folder+'Relations2ndOrder.txt', seeds_file)
@@ -61,4 +62,3 @@ def main(type_atc, argv):
 
 if __name__ == "__main__":
    main('SecondOrder', sys.argv[1:])
-

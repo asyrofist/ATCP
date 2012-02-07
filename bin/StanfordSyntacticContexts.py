@@ -22,16 +22,25 @@ class StanfordSyntacticContexts:
 		self.qty_documents = len(self.files)
 		self.misc = Miscelaneous()
 		self.stoplist = self.misc.getStoplist(stoplist_file)
-
-		self.dic_t = {}
-		self.dic_nt = {}
+		
+		self.matrix_relations = ['AN', 'SV', 'VO']
 		self.dic_an = {}
 		self.dic_sv = {}
 		self.dic_vo = {}
 
+		command = 'rm -Rf '+self.temp_folder+'; mkdir '+self.temp_folder+' '
+		if record_intermediate:
+			command += self.temp_folder+'AN/'+' '+self.temp_folder+'SV/'+' '+self.temp_folder+'VO/'
+		os.system(command)
+
 		i = 0
 		for corpus_file in self.files:
-			print corpus_file
+			self.dic_t = {}
+			self.dic_nt = {}
+			self.dic_an_doc = {}
+			self.dic_sv_doc = {}
+			self.dic_vo_doc = {}
+			#print corpus_file
 			i += 1
 			if re.match('.*xml$', corpus_file):
 				corpus_filename = corpus_file.split('.')[0]
@@ -41,17 +50,10 @@ class StanfordSyntacticContexts:
 				self.__extractRelations__()
 				if record_intermediate:
 					self.__writeDicRelations__(corpus_filename)
-					self.dic_t = {}
-					self.dic_nt = {}
-					self.dic_an = {}
-					self.dic_sv = {}
-					self.dic_vo = {}
-			#self.misc.progress_bar(i, self.qty_documents, 100)
 
-		if not record_intermediate:
-			self.__writeDic__('AN')
-			self.__writeDic__('SV')
-			self.__writeDic__('VO')
+			self.misc.progress_bar(i, self.qty_documents, 100)
+
+		self.__writeDic__()
 
 	def __del__(self):
 		pass
@@ -68,6 +70,8 @@ class StanfordSyntacticContexts:
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicAN__(context+'#'+noun)
 					self.__addElementDicAN__(noun+'#'+context)
+					self.__addElementDicDocAN__(context+'#'+noun)
+					self.__addElementDicDocAN__(noun+'#'+context)
 
 			elif self.dic_nt[id_nt]['cat'] == 'amod':
 				noun = self.dic_t[self.dic_nt[id_nt]['gov']]['lemma'].lower()
@@ -76,6 +80,7 @@ class StanfordSyntacticContexts:
 				context = re.sub('-', '_', context)
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size and context not in self.stoplist:
 					self.__addElementDicAN__(context+'#'+noun)
+					self.__addElementDicDocAN__(context+'#'+noun)
 				
 			if re.match('prep_', self.dic_nt[id_nt]['cat']) \
 				and re.match('^NN', self.dic_t[self.dic_nt[id_nt]['dep']]['pos'])  \
@@ -88,6 +93,8 @@ class StanfordSyntacticContexts:
 				if len(noun) >= self.min_word_size and len(context) >= self.min_word_size:
 					self.__addElementDicAN__(prep+'_'+context+'#'+noun)
 					self.__addElementDicAN__(prep+'_'+noun+'#'+context)
+					self.__addElementDicDocAN__(prep+'_'+context+'#'+noun)
+					self.__addElementDicDocAN__(prep+'_'+noun+'#'+context)
 
 			elif re.match('^(nsubjpass|nsubj|xsubj|agent)$', self.dic_nt[id_nt]['cat']): #gov = verb
 				if re.match('V', self.dic_t[self.dic_nt[id_nt]['gov']]['pos']):
@@ -97,6 +104,7 @@ class StanfordSyntacticContexts:
 					for context in contexts:
 						if len(verb) >= self.min_word_size and len(context) >= self.min_word_size:
 							self.__addElementDicSV__('sub_'+verb+'#'+context)
+							self.__addElementDicDocSV__('sub_'+verb+'#'+context)
 			
 			elif re.match('^(dobj|iobj)$', self.dic_nt[id_nt]['cat']):
 				if re.match('V', self.dic_t[self.dic_nt[id_nt]['gov']]['pos']):
@@ -106,6 +114,7 @@ class StanfordSyntacticContexts:
 					for context in contexts:
 						if len(verb) >= self.min_word_size and len(context) >= self.min_word_size:
 							self.__addElementDicVO__('obj_'+verb+'#'+context)
+							self.__addElementDicDocVO__('obj_'+verb+'#'+context)
 
 	def __addElementDicAN__(self, relation):
 		if self.dic_an.has_key(relation):
@@ -113,11 +122,23 @@ class StanfordSyntacticContexts:
 		else:
 			self.dic_an[relation] = 1
 
+	def __addElementDicDocAN__(self, relation):
+		if self.dic_an_doc.has_key(relation):
+			self.dic_an_doc[relation] += 1
+		else:
+			self.dic_an_doc[relation] = 1
+
 	def __addElementDicSV__(self, relation):
 		if self.dic_sv.has_key(relation):
 			self.dic_sv[relation] += 1
 		else:
 			self.dic_sv[relation] = 1
+
+	def __addElementDicDocSV__(self, relation):
+		if self.dic_sv_doc.has_key(relation):
+			self.dic_sv_doc[relation] += 1
+		else:
+			self.dic_sv_doc[relation] = 1
 
 	def __addElementDicVO__(self, relation):
 		if self.dic_vo.has_key(relation):
@@ -125,28 +146,35 @@ class StanfordSyntacticContexts:
 		else:
 			self.dic_vo[relation] = 1
 
+	def __addElementDicDocVO__(self, relation):
+		if self.dic_vo_doc.has_key(relation):
+			self.dic_vo_doc[relation] += 1
+		else:
+			self.dic_vo_doc[relation] = 1
+
 	def __writeDicRelations__(self, corpus_filename):
 		file_relation_an = self.misc.openFile(self.temp_folder+'AN/AN_'+corpus_filename+'.txt', 'w')
-		for id_relation in self.dic_an:
-			file_relation_an.write(id_relation+'#'+str(self.dic_an[id_relation])+'\n')
+		for id_relation in self.dic_an_doc:
+			file_relation_an.write(id_relation+'#'+str(self.dic_an_doc[id_relation])+'\n')
 		file_relation_an.close()
 
 		file_relation_sv = self.misc.openFile(self.temp_folder+'SV/SV_'+corpus_filename+'.txt', 'w')
-		for id_relation in self.dic_sv:
-			file_relation_sv.write(id_relation+'#'+str(self.dic_sv[id_relation])+'\n')
+		for id_relation in self.dic_sv_doc:
+			file_relation_sv.write(id_relation+'#'+str(self.dic_sv_doc[id_relation])+'\n')
 		file_relation_sv.close()
 
 		file_relation_vo = self.misc.openFile(self.temp_folder+'VO/VO_'+corpus_filename+'.txt', 'w')
-		for id_relation in self.dic_vo:
-			file_relation_vo.write(id_relation+'#'+str(self.dic_vo[id_relation])+'\n')
+		for id_relation in self.dic_vo_doc:
+			file_relation_vo.write(id_relation+'#'+str(self.dic_vo_doc[id_relation])+'\n')
 		file_relation_vo.close()
 
-	def __writeDic__(self, type_relation):
-		file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
-		dic_relation = self.getDic(type_relation)
-		for id_relation in dic_relation:
-			file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')
-		file_relation.close()
+	def __writeDic__(self):
+		for type_relation in self.matrix_relations:
+			file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
+			dic_relation = self.getDic(type_relation)
+			for id_relation in dic_relation:
+				file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')
+			file_relation.close()
 
 	""" Get and Print methods """
 
