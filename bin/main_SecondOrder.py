@@ -45,6 +45,7 @@ def main(type_atc, argv):
 	command = 'cat '+temp_folder+'AN_Relations.txt '+temp_folder+'SV_Relations.txt '+temp_folder+'VO_Relations.txt '+' > '+temp_folder+'Relations2ndOrder.txt'
 	os.system(command)
 
+	logfile.writeLogfile('- Calculating similarity using '+sim_measure)
 	measures = Measures(temp_folder+'Relations2ndOrder.txt', seeds_file)
 	dic_topn = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
 	del measures

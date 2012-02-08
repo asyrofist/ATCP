@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, re, numpy, scipy.sparse
+import sys, re, numpy, scipy.sparse, time
 
 from sparsesvd import sparsesvd
 from math import *
@@ -90,11 +90,29 @@ class Matrix:
 		file_matrix_svd = self.misc.openFile(self.temp_folder+''+self.type_relation+'_Matrix_SVD.txt', 'w')
 		len_row = max(self.row)+1
 		len_col = max(self.col)+1
-
+		#print 'row: ',len_row,' = col: ',len_col
+		#time.sleep(10)
 		sparse_matrix = scipy.sparse.csc_matrix( (self.data,(self.row,self.col)), shape=(len_row,len_col) )
+		#print sparse_matrix
+		#print '\n\n\n\nSPARSE MATRIX'
+		#time.sleep(10)
 		Ut, Sigma, Vt = sparsesvd(sparse_matrix, self.svd_dimension)
+		#print '\n\n\n\nDECOMPOSED MATRIX'
+		#time.sleep(10)
+		#print Ut
+		#print '\n\n\n\nPRINTED UT'
+		#time.sleep(10)
+		#print Sigma
+		#print '\n\n\n\nPRINTED E'
+		#time.sleep(10)
+		#print Vt
+		#print '\n\n\n\nPRINTED Vt'
+		#time.sleep(10)
 		sparse_matrix = array(0)
 		self.svd_matrix = numpy.dot(Ut.T, numpy.dot(numpy.diag(Sigma), Vt))
+		#print '\n\n\n\nSVD MATRIX'
+		#time.sleep(10)
+		#print self.svd_matrix
 		Ut = array(0)
 		Sigma = array(0)
 		Vt = array(0)

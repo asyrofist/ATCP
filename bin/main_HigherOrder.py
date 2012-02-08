@@ -1,14 +1,15 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import sys, os, time, datetime
+import sys, os, datetime
 
 from Parameters import Parameters
 from Measures import Measures
 from Miscelaneous import LogFile
-from Matrix import Matrix
 from Thesaurus import Thesaurus
+from Contexts import Contexts
 from StanfordSyntacticContexts import StanfordSyntacticContexts
+from Matrix import Matrix
 
 def main(type_atc, argv):
 	date_start = datetime.datetime.now()
@@ -26,27 +27,21 @@ def main(type_atc, argv):
 	record_log = parameters.getRecordLog()
 	record_intermediate = parameters.getRecordIntermediate()
 	seeds_file = parameters.getSeedsFile()
+	stoplist_file = parameters.getStoplistFile()
 	sim_measure = parameters.getSimilarityMeasure()
 	del parameters
 
-	logfile = LogFile(record_log, str(date_start), svd_dimension, input_folder, language, None, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
+	logfile = LogFile(record_log, str(date_start), svd_dimension, input_folder, language, stoplist_file, min_word_size, max_qty_terms, None, output_folder, None, temp_folder, seeds_file, sim_measure)
 
-	if not contexts:
+	if contexts:
+		logfile.writeLogfile('- Building syntactics relations from '+temp_folder)
+		contexts = Contexts(temp_folder)
+		del contexts
+	else:
 		logfile.writeLogfile('- Building syntactics relations from '+input_folder)
-
-		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, min_word_size, record_intermediate)
+		ling_corpus = StanfordSyntacticContexts(input_folder, temp_folder, stoplist_file, min_word_size, record_intermediate)
 		del ling_corpus
-
-	logfile.writeLogfile('- Merging terms to '+temp_folder+'Relations2ndOrder.txt')
-
-	if contexts or record_intermediate:
-		command = 'cat '+temp_folder+'AN/* > '+temp_folder+'AN_Relations.txt'
-		os.system(command)
-		command = 'cat '+temp_folder+'SV/* > '+temp_folder+'SV_Relations.txt'
-		os.system(command)
-		command = 'cat '+temp_folder+'VO/* > '+temp_folder+'VO_Relations.txt'
-		os.system(command)
-
+	
 	logfile.writeLogfile('- Computing SVD to '+temp_folder+'AN_Matrix_SVD.txt')
 
 	matrix_an = Matrix(temp_folder, svd_dimension, 'AN')	
@@ -65,10 +60,15 @@ def main(type_atc, argv):
 
 	logfile.writeLogfile('- Computing SVD to '+temp_folder+'VO_Matrix_SVD.txt')
 
-	matrix_vo = Matrix(temp_folder, svd_dimension, 'VO')	
+	print '- Building matrix...'
+	matrix_vo = Matrix(temp_folder, svd_dimension, 'VO')
+	print '- Building matrix from file...'
 	matrix_vo.buildMatrixFromFile()
+	print '- Applying SVD...'
 	matrix_vo.applySvd()
+	print '- Building Relations to SVD file...'
 	matrix_vo.buildRelationsSvd()
+	print '- Deleting matrix...'
 	del matrix_vo
 
 	logfile.writeLogfile('- Merging terms to '+temp_folder+'RelationsHigherOrder.txt')
@@ -76,6 +76,7 @@ def main(type_atc, argv):
 	command = "cat "+temp_folder+'AN_Relations_SVD.txt '+temp_folder+'SV_Relations_SVD.txt '+temp_folder+'VO_Relations_SVD.txt '+' > '+temp_folder+'RelationsHigherOrder.txt'
 	os.system(command)
 
+	logfile.writeLogfile('- Calculating similarity using '+sim_measure)
 	measures = Measures(temp_folder+'RelationsHigherOrder.txt', seeds_file)
 	dic_topn = measures.getTopNToAllSeeds(sim_measure, max_qty_terms)
 	del measures

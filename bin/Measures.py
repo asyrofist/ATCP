@@ -52,8 +52,12 @@ class Measures:
 				self.dic_qty_noun[noun] = 1
 
 		for seed in self.list_seeds:
+			print 'Seed: '+seed
+			i = 0
+			qty_related = len(list_nouns)
 			for related in list_nouns:
 				if seed != related:
+					i += 1
 					baseline = 0
 					diceBin = 0
 					diceMin = 0
@@ -147,6 +151,9 @@ class Measures:
 						self.dic_js[seed][related] = js
 						self.dic_lin[seed][related] = lin
 						self.dic_jaccardMax[seed][related] = jaccardMax
+
+				self.misc.progress_bar(i, qty_related, 100)
+			print ''
 				
 	""" Methods to get the entire dictionaries """
 	def getDic(self, sim_measure):
@@ -323,3 +330,8 @@ class MutualInformation:
 #if __name__ == '__main__':
 #	term = Measures('/home/roger/Desktop/Temp/tempMergedFiles_T3.txt', '../misc/seeds.txt')
 #	print term.getTopNJaccardToSeed('customer_information', 10)
+
+"""
+This script is based on the PERL script to Lingua Toolkit built by Pablo Gamallo Otero called "measures.perl". 
+This script can be found in Lingua Toolkit package in http://gramatica.usc.es/~gamallo/thesaurus/index.htm
+"""
