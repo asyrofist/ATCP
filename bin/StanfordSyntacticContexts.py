@@ -30,7 +30,9 @@ class StanfordSyntacticContexts:
 
 		command = 'rm -Rf '+self.temp_folder+'; mkdir '+self.temp_folder+' '
 		if record_intermediate:
-			command += self.temp_folder+'AN/'+' '+self.temp_folder+'SV/'+' '+self.temp_folder+'VO/'
+			command += self.temp_folder+'AN/'+' '+self.temp_folder+'AN/2Order/'+self.temp_folder+'AN/3Order/ '
+			command += self.temp_folder+'SV/'+' '+self.temp_folder+'SV/2Order/'+self.temp_folder+'SV/3Order/ '
+			command += self.temp_folder+'VO/'+' '+self.temp_folder+'VO/2Order/'+self.temp_folder+'VO/3Order/ '
 		os.system(command)
 
 		i = 0
@@ -153,24 +155,24 @@ class StanfordSyntacticContexts:
 			self.dic_vo_doc[relation] = 1
 
 	def __writeDicRelations__(self, corpus_filename):
-		file_relation_an = self.misc.openFile(self.temp_folder+'AN/AN_'+corpus_filename+'.txt', 'w')
+		file_relation_an = self.misc.openFile(self.temp_folder+'AN/2Order/AN_'+corpus_filename+'.txt', 'w')
 		for id_relation in self.dic_an_doc:
 			file_relation_an.write(id_relation+'#'+str(self.dic_an_doc[id_relation])+'\n')
 		file_relation_an.close()
 
-		file_relation_sv = self.misc.openFile(self.temp_folder+'SV/SV_'+corpus_filename+'.txt', 'w')
+		file_relation_sv = self.misc.openFile(self.temp_folder+'SV/2Order/SV_'+corpus_filename+'.txt', 'w')
 		for id_relation in self.dic_sv_doc:
 			file_relation_sv.write(id_relation+'#'+str(self.dic_sv_doc[id_relation])+'\n')
 		file_relation_sv.close()
 
-		file_relation_vo = self.misc.openFile(self.temp_folder+'VO/VO_'+corpus_filename+'.txt', 'w')
+		file_relation_vo = self.misc.openFile(self.temp_folder+'VO/2Order/VO_'+corpus_filename+'.txt', 'w')
 		for id_relation in self.dic_vo_doc:
 			file_relation_vo.write(id_relation+'#'+str(self.dic_vo_doc[id_relation])+'\n')
 		file_relation_vo.close()
 
 	def __writeDic__(self):
 		for type_relation in self.matrix_relations:
-			file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
+			file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'/2Order/Relations.txt', 'w')
 			dic_relation = self.getDic(type_relation)
 			for id_relation in dic_relation:
 				file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')

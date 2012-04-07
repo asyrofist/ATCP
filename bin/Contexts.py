@@ -27,7 +27,7 @@ class Contexts:
 
 	def __loadTerms__(self, type_relation):
 		try:
-			root, dirs, files = os.walk(self.temp_folder+''+type_relation+'/').next()[:3]
+			root, dirs, files = os.walk(self.temp_folder+''+type_relation+'/2Order/').next()[:3]
 		except IOError:
 			print bcolors.FAIL+'ERROR: It was not possible to open the '+self.temp_folder+' folder'+bcolors.ENDC
 			sys.exit(2)
@@ -70,7 +70,7 @@ class Contexts:
 
 	def __writeDic__(self):
 		for type_relation in self.matrix_relations:
-			file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'_Relations.txt', 'w')
+			file_relation = self.misc.openFile(self.temp_folder+''+type_relation+'/Relations.txt', 'w')
 			dic_relation = self.getDic(type_relation)
 			for id_relation in dic_relation:
 				file_relation.write(id_relation+'#'+str(dic_relation[id_relation])+'\n')

@@ -77,7 +77,8 @@ class LogFile:
 			print '---------------------------------------------------------------------------------'
 
 	def __del__(self):
-		self.logfile.close()
+		if self.record_log:
+			self.logfile.close()
 
 	def writeLogfile(self, message):
 		if self.record_log:
