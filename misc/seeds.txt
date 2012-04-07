@@ -1,1 +1,10 @@
-ROGER
+children
+consent
+customer
+data_protection
+data_subject
+marketing
+notice
+personal_data
+personal_information
+regulation
