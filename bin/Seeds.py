@@ -11,7 +11,7 @@ class Seeds:
 		for line in file_seeds:
 			if line != '':
 				line = line.replace('\n','')
-				self.list_seeds.append(line)
+				self.list_seeds.append(line.lower())
 		file_seeds.close()
 
 	def getQtySeeds(self):
