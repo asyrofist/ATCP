@@ -29,6 +29,7 @@ class Matrix:
 
 		self.buildMatrixFromFile(input_file)
 		self.applySvd()
+		self.writeSvd()
 
 	def __del__(self):
 		pass
@@ -118,3 +119,14 @@ class Matrix:
 		#Ut = array(0)
 		#Sigma = array(0)
 		#Vt = array(0)
+
+	def writeSvd(self):
+		file_matrix_svd = self.misc.openFile(self.temp_folder+'/MatrixDataSvd.txt', 'w')
+		row_number = 0
+		for row_data in self.svd_matrix.T:
+			column_number = 0
+			for value in row_data:
+				file_matrix_svd.write(self.dic_row_index[row_number]+'#'+self.dic_column_index[column_number]+'#'+str(value)+'\n')
+				column_number += 1
+			row_number += 1
+		file_matrix_svd.close()
