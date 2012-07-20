@@ -20,7 +20,7 @@ DESCRIPTION
 
     Program main_lin.py
 		
-    Program main_lsa.py takes plain text files and seeds as input and generates a list of
+    Program main_lsa.py takes plain text files and seeds as input and generates a list of 
     related terms to each seed, using the Latentic Semantic Analysis (LSA) algorithm.
 
 
