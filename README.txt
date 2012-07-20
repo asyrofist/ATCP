@@ -28,12 +28,6 @@ DESCRIPTION
     The Automatic Thesaurus Construction Package (ATCP) in its version (v0.1)
     supports three types of automatic construction.  
 
-SEE ALSO
-    * ATCP Home: <http://gpsi.ucpel.tche.br/~roger/atcp/>
-
-ACKNOWLEDGEMENTS
-    This work has been partially supported by 
-
 COPYRIGHT
     Copyright (C) 2011, Roger Granada.
 
